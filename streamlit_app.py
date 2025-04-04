@@ -75,15 +75,8 @@ if drp_participation == "Yes":
     st.markdown("✔️ Must sign written agreement before May 1, 2025")
     st.markdown("✔️ Must separate no later than September 30, 2025")
 
-# 💬 GPT Advisor Embed
+# 💬 GPT Advisor Link (replacing iframe)
 st.markdown("---")
 st.markdown("### 💬 Have Questions About TSP, DRP, or VERA?")
-st.markdown("_You can chat directly with Simforia's TSP Advisor GPT below:_")
+st.markdown("[🧠 Ask Simforia’s TSP Advisor GPT](https://chat.openai.com/g/g-67eea2244d2c819189bee5201afec0bc-tsp-advisor-by-simforia-intellegence-group) →")
 
-st.components.v1.iframe(
-    src="https://chat.openai.com/g/g-67eea2244d2c819189bee5201afec0bc-tsp-advisor-by-simforia-intellegence-group",
-    height=600,
-    scrolling=True
-)
-
-st.markdown("If the chat doesn't load, [click here to open it in a new tab](https://chatgpt.com/g/g-67eea2244d2c819189bee5201afec0bc-tsp-advisor-by-simforia-intellegence-group).")
