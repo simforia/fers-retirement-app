@@ -159,4 +159,4 @@ st.markdown("[🧠 Ask Simforia’s TSP Advisor GPT — Comprehensive TSP Strate
 # 📫 Contact for Support or Feedback
 st.markdown("---")
 st.markdown("### 📫 Contact Simforia Intelligence Group
-If you're unable to use the form above or need direct assistance, please use our secure contact portal by submitting feedback above. For verified inquiries, contact will be initiated on our side. (Email address intentionally withheld to prevent bot scraping.)
+If you're unable to use the form above or need direct assistance, please use our secure contact portal by submitting feedback above. For verified inquiries, contact will be initiated on our side. (Email address intentionally withheld to prevent bot scraping.)")
