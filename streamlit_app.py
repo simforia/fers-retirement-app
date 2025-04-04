@@ -9,12 +9,14 @@ current_age = st.number_input("Current Age", min_value=18, max_value=80, value=5
 years_service = st.number_input("Years of Federal Service", min_value=0, max_value=50, value=27)
 drp_participation = st.selectbox("Participating in DRP?", ["Yes", "No"])
 
-# 🖼️ Centered Logo and Title Using Streamlit Columns
-col1, col2, col3 = st.columns([1,2,1])
-with col2:
-    st.image("simforia_logo.png", width=200)
-    st.markdown("### 🧠 Simforia Intelligence Group")
-    st.markdown("_Retirement Optimization Toolkit – DRP / VERA / TSP Strategy Suite_")
+# 🖼️ Logo and Title Top-Aligned Without Columns
+st.markdown("""
+<div style='text-align: center;'>
+    <img src='simforia_logo.png' width='200'>
+    <h3>🧠 Simforia Intelligence Group</h3>
+    <em>Retirement Optimization Toolkit – DRP / VERA / TSP Strategy Suite</em>
+</div>
+""", unsafe_allow_html=True)
 
 with st.expander("📢 Official DRP & VERA Guidance – Click to View"):
     st.markdown("""
@@ -79,4 +81,3 @@ if drp_participation == "Yes":
 st.markdown("---")
 st.markdown("### 💬 Have Questions About TSP, DRP, or VERA?")
 st.markdown("[🧠 Ask Simforia’s TSP Advisor GPT](https://chat.openai.com/g/g-67eea2244d2c819189bee5201afec0bc-tsp-advisor-by-simforia-intellegence-group) →")
-
