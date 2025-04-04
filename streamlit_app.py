@@ -31,12 +31,14 @@ with st.expander("ℹ️ How to Use This Tool"):
     1. Enter your current age and federal service.
     2. Choose FEGLI and FEHB options.
     3. Adjust TSP and COLA.
-    4. Review your projections and download a DRP letter.
+    4. Set your planned retirement age.
+    5. Review your projections and download a DRP letter.
     """)
 
 # Inputs
 current_age = st.number_input("Current Age", min_value=18, max_value=80)
 years_service = st.number_input("Years of Federal Service", min_value=0, max_value=50)
+retirement_age_input = st.number_input("Planned Retirement Age", min_value=current_age, max_value=80, value=62)
 drp_participation = st.selectbox("Participating in DRP?", ["", "Yes", "No"])
 vsip_offer = st.number_input("VSIP Offer ($, optional)", min_value=0)
 high3_salary = st.number_input("High-3 Average Salary ($)", min_value=0)
@@ -63,7 +65,7 @@ tsp_contribution_pct = st.slider("TSP Contribution (% of Salary)", 0, 100, 5)
 fers_multiplier = 0.01
 social_security_estimate = 1800
 tsp_return_rate = 0.06
-years_until_62 = max(0, 62 - current_age)
+years_until_retirement = max(0, retirement_age_input - current_age)
 tsp_contribution_annual = high3_salary * (tsp_contribution_pct / 100)
 base_fers = high3_salary * fers_multiplier * years_service
 fers_annuity = base_fers * (1 - survivor_reduction)
@@ -75,8 +77,9 @@ else:
     srs = 0
     srs_text = "Not eligible or over 62"
 
+# 🔄 Updated: TSP stops at retirement age
 future_tsp = tsp_balance
-for _ in range(int(years_until_62)):
+for _ in range(int(years_until_retirement)):
     future_tsp = (future_tsp + tsp_contribution_annual) * (1 + tsp_return_rate)
 
 # FEHB
@@ -132,7 +135,7 @@ monthly_net_income = monthly_fers_income + monthly_srs_income - monthly_insuranc
 st.markdown("### 💸 Net Retirement Income Estimate")
 st.write(f"**FERS Pension (Annual):** ${fers_annuity:,.2f}")
 st.write(f"**Special Retirement Supplement:** {srs_text}")
-st.write(f"**Projected TSP at Age 62:** ${future_tsp:,.2f}")
+st.write(f"**Projected TSP at Retirement (Age {retirement_age_input}):** ${future_tsp:,.2f}")
 st.write(f"**Monthly Net Pension (After FEHB & FEGLI):** ${monthly_net_income:,.2f}")
 
 # Breakdown
