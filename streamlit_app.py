@@ -51,13 +51,25 @@ fegli_premium = fegli_costs[fegli_option]
 
 monthly_expenses = st.number_input("Other Monthly Living Expenses ($)", min_value=0, value=3000)
 
+# --- Disability Retirement Option ---
+st.markdown("### Disability Retirement")
+disability_retirement = st.checkbox("Apply FERS Disability Retirement Calculation Instead?")
+
 # --- Pension & SRS ---
 fers_multiplier = 0.01
 survivor_reduction = 0.10
-fers_annuity = high3_salary * fers_multiplier * years_service * (1 - survivor_reduction)
+if disability_retirement:
+    fers_annuity = (high3_salary * 0.6) if current_age < 62 else (high3_salary * 0.4)
+else:
+    fers_annuity = high3_salary * fers_multiplier * years_service * (1 - survivor_reduction)
 fers_monthly = round(fers_annuity / 12, 2)
+
 srs = (years_service / 40) * (1800 * 12) if current_age < 62 and years_service >= 20 else 0
 srs_text = f"${srs:,.2f} annually until age 62" if srs > 0 else "Not eligible or over 62"
+
+# --- VA Disability ---
+st.markdown("### VA Disability Compensation")
+va_monthly = st.number_input("Monthly VA Disability Payment ($)", min_value=0, value=0)
 
 # --- Retirement Milestones ---
 st.markdown("### Retirement Milestones")
@@ -103,12 +115,16 @@ else:
 # --- Net Income Summary ---
 st.markdown("### Monthly Income Estimate")
 tsp_draw = 1800
-total_income = fers_monthly + tsp_draw
+taxable_income = fers_monthly + tsp_draw
+nontaxable_income = va_monthly
+
+total_income = taxable_income + nontaxable_income
 total_deductions = fehb_premium + fegli_premium + monthly_expenses
 net_monthly = round(total_income - total_deductions, 2)
 
-st.write(f"**FERS Monthly Pension:** ${fers_monthly:,.2f}")
-st.write(f"**Estimated TSP Draw:** ${tsp_draw:,.2f}")
+st.write(f"**FERS Monthly Pension (Taxable):** ${fers_monthly:,.2f}")
+st.write(f"**TSP Withdrawal (Taxable):** ${tsp_draw:,.2f}")
+st.write(f"**VA Disability (Non-Taxable):** ${va_monthly:,.2f}")
 st.write(f"**FEHB Premium:** ${fehb_premium:,.2f}")
 st.write(f"**FEGLI Premium:** ${fegli_premium:,.2f}")
 st.write(f"**Living Expenses:** ${monthly_expenses:,.2f}")
