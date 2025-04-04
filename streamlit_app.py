@@ -49,14 +49,11 @@ survivor_percentage = 0.5 if include_survivor else 0.0
 
 cola_rate = st.slider("COLA Estimate (Annual % Starting at Age 62)", min_value=0.0, max_value=5.0, value=2.0, step=0.1)
 
-# 📊 Retirement Benefits Calculation
-st.markdown("### 📘 Estimated FERS Retirement Benefits")
-
 # TSP Inputs
 tsp_balance = st.number_input("Current TSP Balance ($)", min_value=0)
 tsp_contribution_pct = st.slider("TSP Contribution (% of Salary)", 0, 100, 5)
 
-# Constants
+# Constants & Retirement Calcs
 fers_multiplier = 0.01
 social_security_estimate = 1800  # est. monthly SS at 62
 tsp_return_rate = 0.06
@@ -64,11 +61,9 @@ retirement_age = current_age
 years_until_62 = max(0, 62 - current_age)
 tsp_contribution_annual = high3_salary * (tsp_contribution_pct / 100)
 
-# FERS Pension
 base_fers = high3_salary * fers_multiplier * years_service
 fers_annuity = base_fers * (1 - survivor_reduction)
 
-# SRS
 if current_age < 62 and years_service >= 20:
     srs = (years_service / 40) * (social_security_estimate * 12)
     srs_text = f"${srs:,.2f} annually until age 62"
@@ -76,17 +71,64 @@ else:
     srs = 0
     srs_text = "Not eligible or over 62"
 
-# TSP Growth
 future_tsp = tsp_balance
 for _ in range(int(years_until_62)):
     future_tsp = (future_tsp + tsp_contribution_annual) * (1 + tsp_return_rate)
 
-# Output
+# 🏥 FEHB Premium Selection
+fehb_option = st.selectbox("Will you retain FEHB (Health Insurance)?", ["No", "Yes - Self Only", "Yes - Self + Family"])
+fehb_monthly_cost = {
+    "No": 0,
+    "Yes - Self Only": 200,
+    "Yes - Self + Family": 500
+}[fehb_option]
+
+# 💼 FEGLI Life Insurance Estimate
+st.markdown("### 🧮 FEGLI Life Insurance Estimate")
+retain_fegli = st.checkbox("Retain FEGLI into retirement?")
+fegli_coverage_multiplier = st.selectbox("FEGLI Option B Multiple of Salary", [0, 1, 2, 3, 4, 5], index=0)
+base_salary_for_fegli = high3_salary
+
+def fegli_option_b_rate(age):
+    if age < 35: return 0.02
+    elif age < 40: return 0.03
+    elif age < 45: return 0.06
+    elif age < 50: return 0.09
+    elif age < 55: return 0.16
+    elif age < 60: return 0.36
+    elif age < 65: return 0.86
+    elif age < 70: return 1.86
+    elif age < 75: return 3.56
+    elif age < 80: return 6.28
+    else: return 8.64
+
+if retain_fegli and fegli_coverage_multiplier > 0:
+    option_b_coverage = (base_salary_for_fegli / 1000) * fegli_coverage_multiplier
+    fegli_rate = fegli_option_b_rate(current_age)
+    fegli_monthly_cost = round(option_b_coverage * fegli_rate, 2)
+else:
+    fegli_monthly_cost = 0.0
+
+# 📊 Net Income Estimate
+monthly_insurance_cost = fehb_monthly_cost + fegli_monthly_cost
+monthly_fers_income = fers_annuity / 12
+monthly_srs_income = srs / 12
+monthly_net_income = monthly_fers_income + monthly_srs_income - monthly_insurance_cost
+
+# 🧾 Show Deductions
+with st.expander("🧾 Insurance Deduction Breakdown"):
+    st.write(f"- **FEHB Premium:** ${fehb_monthly_cost:,.2f}")
+    st.write(f"- **FEGLI Premium (Option B x{fegli_coverage_multiplier}):** ${fegli_monthly_cost:,.2f}")
+    st.write(f"- **Total Monthly Insurance Cost:** ${monthly_insurance_cost:,.2f}")
+
+# 📌 Final Output
+st.markdown("### 💸 Net Retirement Income Estimate")
 st.write(f"**FERS Pension (Annual Estimate):** ${fers_annuity:,.2f}")
 st.write(f"**Special Retirement Supplement (SRS):** {srs_text}")
 st.write(f"**Projected TSP at Age 62:** ${future_tsp:,.2f}")
+st.write(f"**Estimated Monthly Net Pension (After FEHB & FEGLI):** ${monthly_net_income:,.2f}")
 
-# 🔘️ DRP Auto-Fill Letter Generator
+# 🔘️ DRP Letter Generator
 with st.expander("✍️ Generate DRP Participation Letter"):
     user_name = st.text_input("Your Full Name")
     user_series = st.text_input("Position Description (PD#)")
@@ -119,12 +161,12 @@ Respectfully,
         st.code(letter_text)
         st.download_button("🔕 Download Letter as TXT", data=letter_text, file_name="drp_request_letter.txt")
 
-# 🔗 GPT Link for TSP / DRP / VERA Q&A
+# 🔗 GPT Link
 st.markdown("---")
 st.markdown("### 💬 Have Questions About TSP, DRP, or VERA?")
 st.markdown("[🧠 Ask Simforia’s TSP Advisor GPT — Comprehensive TSP Strategy and Projections](https://chat.openai.com/g/g-67eea2244d2c819189bee5201afec0bc-tsp-advisor-by-simforia-intellegence-group) →")
 
-# 🗘️ Provide Contact Information for Feedback
+# 🗘️ Contact Info
 st.markdown("### 📧 Contact Simforia Intelligence Group")
 st.markdown("""
 If you have any questions or feedback regarding the tool, please reach out to our team securely. 
@@ -144,4 +186,3 @@ While we strive to ensure accuracy, all projections, simulations, and financial 
 This app is not affiliated with the U.S. Office of Personnel Management (OPM), the Department of Defense, or any federal agency. Users should consult with a certified financial advisor, HR specialist, or official retirement counselor before making any retirement-related decisions.<br><br>
 By using this app, you agree that the creators of the app are not responsible for any actions taken based on its output.</small>
 """, unsafe_allow_html=True)
-
