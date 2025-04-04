@@ -2,6 +2,7 @@
 import streamlit as st
 from datetime import datetime
 import matplotlib.pyplot as plt
+import pandas as pd
 
 # --- Setup ---
 st.session_state.setdefault("visits", 0)
