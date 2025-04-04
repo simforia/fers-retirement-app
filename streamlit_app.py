@@ -5,13 +5,9 @@ from io import BytesIO
 from datetime import datetime
 
 # 🖼️ Logo and Title Top-Aligned
-st.markdown("""
-<div style='text-align: center;'>
-    <img src='simforia_logo.png' width='200'>
-    <h3>🧠 Simforia Intelligence Group</h3>
-    <em>Retirement Optimization Toolkit – DRP / VERA / TSP Strategy Suite</em>
-</div>
-""", unsafe_allow_html=True)
+st.markdown("<h3 style='text-align: center;'>🧠 Simforia Intelligence Group</h3>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center;'><em>Retirement Optimization Toolkit – DRP / VERA / TSP Strategy Suite</em></p>", unsafe_allow_html=True)
+st.image("simforia_logo.png", width=200, use_column_width=False)
 
 # ✅ Required Inputs for Eligibility Logic
 current_age = st.number_input("Current Age", min_value=18, max_value=80)
