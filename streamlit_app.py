@@ -90,14 +90,25 @@ if drp_elected:
     total_admin_leave_income = months_of_leave * monthly_salary
     st.write(f"**Estimated Admin Leave Income (Before Final Separation):** ${total_admin_leave_income:,.2f}")
 
-# --- Side-by-Side Comparison: Regular vs Disability Retirement ---
-st.markdown("### 🧮 What-if Comparison: Disability vs. Regular Retirement")
-
+# --- Pension Calculations ---
 fers_regular = high3_salary * 0.01 * years_service * 0.9
 fers_disability = high3_salary * (0.6 if current_age < 62 else 0.4)
 
 monthly_regular = round(fers_regular / 12, 2)
 monthly_disability = round(fers_disability / 12, 2)
+
+# --- Select which pension scenario to use ---
+if disability_retirement:
+    selected_fers_income = fers_disability
+    selected_monthly_income = monthly_disability
+    pension_label = "Disability Retirement"
+else:
+    selected_fers_income = fers_regular
+    selected_monthly_income = monthly_regular
+    pension_label = "Regular FERS Retirement"
+
+# --- What-if Comparison ---
+st.markdown("### 🧮 What-if Comparison: Disability vs. Regular Retirement")
 
 comparison_data = {
     "Scenario": ["Regular FERS Retirement", "Disability Retirement"],
@@ -107,7 +118,6 @@ comparison_data = {
     "VA Monthly Added ($)": [va_monthly] * 2,
     "FEHB/FEGLI Annual Cost ($)": [fehb_premium * 12 + fegli_premium * 12] * 2
 }
-
 comp_df = pd.DataFrame(comparison_data)
 comp_df = comp_df.style.format({
     "Annual Pension ($)": "${:,.2f}",
@@ -115,25 +125,29 @@ comp_df = comp_df.style.format({
     "VA Monthly Added ($)": "${:,.2f}",
     "FEHB/FEGLI Annual Cost ($)": "${:,.2f}"
 })
-
 st.dataframe(comp_df, use_container_width=True)
 
 # --- Financial Summary (Corrected Totals) ---
-
 st.markdown("### 📋 Total Pre-Retirement Income Summary")
 
-total_preretirement_income = vsip_amount + total_admin_leave_income + fers_regular + srs_annual + (va_monthly * 12)
+total_preretirement_income = (
+    vsip_amount +
+    total_admin_leave_income +
+    selected_fers_income +
+    srs_annual +
+    (va_monthly * 12)
+)
 
 summary_data = {
     "Income Type": [
         "VSIP Lump Sum",
-        "Annual FERS Pension",
+        f"Annual FERS Pension ({pension_label})",
         "Special Retirement Supplement (SRS)",
         "Annual VA Disability"
     ],
     "Amount ($)": [
         vsip_amount,
-        fers_regular,
+        selected_fers_income,
         srs_annual,
         va_monthly * 12
     ]
@@ -141,7 +155,6 @@ summary_data = {
 
 summary_df = pd.DataFrame(summary_data)
 st.dataframe(summary_df.style.format({"Amount ($)": "${:,.2f}"}), use_container_width=True)
-
 st.success(f"**Combined Pre-Retirement Income:** ${total_preretirement_income:,.2f}")
 
 # --- Net Cash After Expenses ---
@@ -171,3 +184,4 @@ st.markdown("""
 ---
 <small><strong>Disclaimer:</strong> This simulation tool is provided strictly for educational and informational purposes. It does not constitute official retirement guidance, legal counsel, financial advice, or tax planning. This tool is not affiliated with, endorsed by, or authorized by the Office of Personnel Management (OPM), the Department of Defense (DoD), or any federal agency. All estimates are based on simplified assumptions and publicly available retirement formulas and should not be used for final decision-making. Individual circumstances, benefit eligibility, agency-specific policies, and future changes to law or policy may significantly alter results. Before acting on any output from this tool, you are strongly advised to consult your Human Resources office, a certified financial planner, tax professional, and/or retirement counselor. Use of this app constitutes acknowledgment that Simforia Intelligence Group assumes no liability for outcomes or decisions made from its use.</small>
 """, unsafe_allow_html=True)
+
