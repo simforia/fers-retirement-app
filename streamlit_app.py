@@ -15,10 +15,17 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 🔼 Logo and Title Top-Aligned
-st.markdown("<h2 style='text-align: center;'> Simforia Intelligence Group</h2>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; font-size: 18px;'><em>Retirement Optimization Toolkit – DRP / VERA / TSP Strategy Suite</em></p>", unsafe_allow_html=True)
-st.image("simforia_logo.png", width=150)
+# 🔼 Logo Top-Left and Title Centered
+logo_and_title = """
+<div style="display: flex; align-items: center; justify-content: space-between;">
+    <img src="https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/simforia_logo.png" alt="Simforia Logo" style="height: 60px;">
+    <div style="flex-grow: 1; text-align: center;">
+        <h2>Simforia Intelligence Group</h2>
+        <p style='font-size: 18px;'><em>Retirement Optimization Toolkit – DRP / VERA / TSP Strategy Suite</em></p>
+    </div>
+</div>
+"""
+st.markdown(logo_and_title, unsafe_allow_html=True)
 
 # 📘 Instructions
 with st.expander("ℹ️ How to Use This Tool"):
@@ -43,13 +50,13 @@ survivor_percentage = 0.5 if include_survivor else 0.0
 
 cola_rate = st.slider("COLA Estimate (Annual % Starting at Age 62)", min_value=0.0, max_value=5.0, value=2.0, step=0.1)
 
-# 🗘️ DRP Auto-Fill Letter Generator
+# 🔘️ DRP Auto-Fill Letter Generator
 with st.expander("✍️ Generate DRP Participation Letter"):
     user_name = st.text_input("Your Full Name")
     user_series = st.text_input("Position Title / Series / Grade")
     user_component = st.text_input("Your Duty Station or Component")
 
-    if st.button("📄 Generate DRP Letter"):
+    if st.button("🔕️ Generate DRP Letter"):
         letter_text = f"""
 Subject: Formal Request for Participation in DRP and VERA
 
@@ -68,7 +75,7 @@ Sincerely,
 {user_component}
         """
         st.code(letter_text)
-        st.download_button("📅 Download Letter as TXT", data=letter_text, file_name="drp_request_letter.txt")
+        st.download_button("🔕️ Download Letter as TXT", data=letter_text, file_name="drp_request_letter.txt")
 
 # 🔗 GPT Link for TSP / DRP / VERA Q&A
 st.markdown("---")
@@ -78,6 +85,10 @@ st.markdown("[🧠 Ask Simforia’s TSP Advisor GPT — Comprehensive TSP Strate
 # 📝 Provide Contact Information for Feedback
 st.markdown("### 📧 Contact Simforia Intelligence Group")
 st.markdown("""
-If you have any questions or feedback regarding the tool, please reach out to our team.
-[Submit feedback here](https://formspree.io/f/mzzejjkk)
-""")
+If you have any questions or feedback regarding the tool, please reach out to our team securely. 
+<form action="https://formspree.io/f/mzzejjkk" method="POST">
+  <label>Your message:<br><textarea name="message"></textarea></label><br>
+  <label>Your email (optional, for response):<br><input type="email" name="email"></label><br>
+  <button type="submit">Send Feedback</button>
+</form>
+""", unsafe_allow_html=True)
