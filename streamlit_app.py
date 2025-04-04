@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import streamlit as st
 from datetime import datetime
+import matplotlib.pyplot as plt
 
 # --- Setup ---
 st.session_state.setdefault("visits", 0)
@@ -29,6 +30,7 @@ with st.expander("ℹ️ How to Use This Tool"):
     2. Input your TSP balance, high-3 salary, and contribution rate.
     3. Select your FEHB and FEGLI retirement coverage.
     4. View projected growth, income, and milestone ages.
+    5. Choose VERA, VSIP, and DRP options if eligible.
     """)
 
 # --- Inputs ---
@@ -39,115 +41,58 @@ tsp_balance = st.number_input("Current TSP Balance ($)", min_value=0)
 tsp_contribution_pct = st.slider("TSP Contribution (% of Salary)", 0, 100, 5)
 tsp_contribution_annual = high3_salary * (tsp_contribution_pct / 100)
 
-# --- FEHB & FEGLI Selection ---
-st.markdown("### Benefit Coverage Costs")
-fehb_plan = st.selectbox("FEHB Plan Type", ["None", "Self Only", "Self + One", "Family"])
-fehb_costs = {"None": 0, "Self Only": 300, "Self + One": 550, "Family": 750}
-fehb_premium = fehb_costs[fehb_plan]
+# --- VERA / VSIP / DRP Options ---
+st.markdown("### Separation Incentives")
+vera_elected = st.checkbox("Elect Voluntary Early Retirement Authority (VERA)?")
+vsip_amount = st.number_input("VSIP Offer Amount ($, if applicable)", min_value=0)
+drp_elected = st.checkbox("Participating in DoD Deferred Resignation Program (DRP)?")
 
-fegli_option = st.selectbox("FEGLI Option", ["None", "Basic", "Basic + Option A", "Basic + Option B"])
-fegli_costs = {"None": 0, "Basic": 50, "Basic + Option A": 70, "Basic + Option B": 90}
-fegli_premium = fegli_costs[fegli_option]
+total_admin_leave_income = 0  # default if DRP not selected
 
-monthly_expenses = st.number_input("Other Monthly Living Expenses ($)", min_value=0, value=3000)
+if vera_elected:
+    st.info("You have selected VERA: early retirement available with 20 years at age 50 or 25 years at any age.")
+if drp_elected:
+    st.info("You have elected the DRP. You may enter paid administrative leave beginning May 1, 2025.")
+    st.warning("⚠️ You must separate from federal service by September 30, 2025 under DRP rules.")
+if vsip_amount > 0:
+    st.success(f"VSIP Lump Sum: ${vsip_amount:,.2f} will be added to your cash flow model.")
 
-# --- Disability Retirement Option ---
-st.markdown("### Disability Retirement")
-disability_retirement = st.checkbox("Apply FERS Disability Retirement Calculation Instead?")
+# --- DRP Admin Leave Simulation ---
+if drp_elected:
+    st.markdown("### DRP Administrative Leave Simulation")
+    months_of_leave = st.slider("Months of Paid Leave Before Separation", 1, 5, 4)
+    monthly_salary = high3_salary / 12
+    total_admin_leave_income = months_of_leave * monthly_salary
+    st.write(f"**Estimated Admin Leave Income (Before Final Separation):** ${total_admin_leave_income:,.2f}")
 
-# --- Pension & SRS ---
-fers_multiplier = 0.01
-survivor_reduction = 0.10
-if disability_retirement:
-    fers_annuity = (high3_salary * 0.6) if current_age < 62 else (high3_salary * 0.4)
-else:
-    fers_annuity = high3_salary * fers_multiplier * years_service * (1 - survivor_reduction)
-fers_monthly = round(fers_annuity / 12, 2)
+# --- Pre-Retirement Income Summary ---
+st.markdown("### 📋 Total Pre-Retirement Income Summary")
+total_preretirement_income = vsip_amount + total_admin_leave_income
+st.write(f"**Total DRP Leave Pay:** ${total_admin_leave_income:,.2f}")
+st.write(f"**VSIP Lump Sum:** ${vsip_amount:,.2f}")
+st.success(f"**Combined Pre-Retirement Income:** ${total_preretirement_income:,.2f}")
 
-srs = (years_service / 40) * (1800 * 12) if current_age < 62 and years_service >= 20 else 0
-srs_text = f"${srs:,.2f} annually until age 62" if srs > 0 else "Not eligible or over 62"
+# --- Net Worth Over Time (Simulation) ---
+st.markdown("### 📈 Projected Net Worth Over Time")
+cash_savings = total_preretirement_income  # starting with DRP + VSIP
+tsp_growth_rate = 0.05
+fers_pension_annual = 0.01 * high3_salary * years_service
+annual_expenses = 40000
 
-# --- VA Disability ---
-st.markdown("### VA Disability Compensation")
-va_monthly = st.number_input("Monthly VA Disability Payment ($)", min_value=0, value=0)
+net_worth = []
+years = list(range(current_age, 86))
 
-# --- Retirement Milestones ---
-st.markdown("### Retirement Milestones")
-dob_year = datetime.now().year - current_age
-milestones = {
-    "MRA (Minimum Retirement Age)": 57,
-    "59½ (Penalty-Free Withdrawals)": 59.5,
-    "Age 62 (Full FERS Eligibility)": 62,
-    "Age 65 (Medicare Eligibility)": 65,
-    "Age 73 (RMDs Begin)": 73
-}
-for label, age in milestones.items():
-    st.write(f"**{label}**: Age {age} → Year **{int(dob_year + age)}**")
+for year in years:
+    cash_savings += cash_savings * 0.02  # safe yield (2%)
+    tsp_balance += tsp_balance * tsp_growth_rate
+    cash_savings += fers_pension_annual
+    cash_savings -= annual_expenses
+    net_worth.append(cash_savings + tsp_balance)
 
-# --- TSP Custom Allocation Projection ---
-st.markdown("### Project TSP Growth with Custom Fund Allocation")
-alloc_g = st.slider("G Fund (%)", 0, 100, 40)
-alloc_f = st.slider("F Fund (%)", 0, 100, 10)
-alloc_c = st.slider("C Fund (%)", 0, 100, 25)
-alloc_s = st.slider("S Fund (%)", 0, 100, 15)
-alloc_i = st.slider("I Fund (%)", 0, 100, 10)
-total_alloc = alloc_g + alloc_f + alloc_c + alloc_s + alloc_i
-
-average_returns = {"G": 0.02, "F": 0.04, "C": 0.10, "S": 0.11, "I": 0.07}
-future_tsp = tsp_balance
-years_until_62 = max(0, 62 - current_age)
-
-if total_alloc == 100:
-    allocation = {
-        "G": alloc_g / 100,
-        "F": alloc_f / 100,
-        "C": alloc_c / 100,
-        "S": alloc_s / 100,
-        "I": alloc_i / 100
-    }
-    for _ in range(int(years_until_62)):
-        total_return = sum(allocation[f] * average_returns[f] for f in allocation)
-        future_tsp = (future_tsp + tsp_contribution_annual) * (1 + total_return)
-    st.success(f"Projected TSP Balance at Age 62: ${future_tsp:,.2f}")
-else:
-    st.error("⚠️ Fund allocations must total 100%.")
-
-# --- Net Income Summary ---
-st.markdown("### Monthly Income Estimate")
-tsp_draw = 1800
-taxable_income = fers_monthly + tsp_draw
-nontaxable_income = va_monthly
-
-total_income = taxable_income + nontaxable_income
-total_deductions = fehb_premium + fegli_premium + monthly_expenses
-net_monthly = round(total_income - total_deductions, 2)
-
-st.write(f"**FERS Monthly Pension (Taxable):** ${fers_monthly:,.2f}")
-st.write(f"**TSP Withdrawal (Taxable):** ${tsp_draw:,.2f}")
-st.write(f"**VA Disability (Non-Taxable):** ${va_monthly:,.2f}")
-st.write(f"**FEHB Premium:** ${fehb_premium:,.2f}")
-st.write(f"**FEGLI Premium:** ${fegli_premium:,.2f}")
-st.write(f"**Living Expenses:** ${monthly_expenses:,.2f}")
-st.success(f"**Net Monthly Income:** ${net_monthly:,.2f}")
-
-# --- SRS Info ---
-st.markdown("### Special Retirement Supplement (SRS)")
-st.write(f"**SRS Eligibility:** {srs_text}")
-if srs > 0:
-    st.write(f"**SRS Monthly (Until 62):** ${round(srs / 12, 2):,.2f}")
-
-# --- Footer ---
-st.markdown("---")
-st.markdown("**Contact Simforia Intelligence Group**")
-st.markdown("""
-<form action="https://formspree.io/f/mzzejjkk" method="POST">
-  <label>Your message:<br><textarea name="message"></textarea></label><br>
-  <label>Your email (optional):<br><input type="email" name="email"></label><br>
-  <button type="submit">Send</button>
-</form>
-""", unsafe_allow_html=True)
-
-st.markdown("""
----
-<small><strong>Disclaimer:</strong> This tool provides general estimates for educational use only. Not affiliated with OPM, DoD, or any federal agency. Consult HR or a certified advisor before making retirement decisions.</small>
-""", unsafe_allow_html=True)
+fig, ax = plt.subplots()
+ax.plot(years, net_worth, marker='o')
+ax.set_title("Projected Net Worth Timeline")
+ax.set_xlabel("Age")
+ax.set_ylabel("Total Net Worth ($)")
+ax.grid(True)
+st.pyplot(fig)
