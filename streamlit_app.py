@@ -15,14 +15,12 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 🔼 Logo Top-Left and Title Centered
+# 🔼 Logo Centered Above Title
 logo_and_title = """
-<div style="display: flex; align-items: center; justify-content: space-between;">
-    <img src="https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/simforia_logo.png" alt="Simforia Logo" style="height: 60px;">
-    <div style="flex-grow: 1; text-align: center;">
-        <h2>Simforia Intelligence Group</h2>
-        <p style='font-size: 18px;'><em>Retirement Optimization Toolkit – DRP / VERA / TSP Strategy Suite</em></p>
-    </div>
+<div style="text-align: center;">
+    <img src="https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/simforia_logo.png" alt="Simforia Logo" style="height: 80px; margin-bottom: 10px;">
+    <h2>Simforia Intelligence Group</h2>
+    <p style='font-size: 18px;'><em>Retirement Optimization Toolkit – DRP / VERA / TSP Strategy Suite</em></p>
 </div>
 """
 st.markdown(logo_and_title, unsafe_allow_html=True)
