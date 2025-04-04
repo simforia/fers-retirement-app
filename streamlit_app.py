@@ -92,40 +92,35 @@ if drp_elected:
 # --- Pre-Retirement Income Summary ---
 st.markdown("### 📋 Total Pre-Retirement Income Summary")
 total_preretirement_income = vsip_amount + total_admin_leave_income
-st.write(f"**Total DRP Leave Pay:** ${total_admin_leave_income:,.2f}")
-st.write(f"**VSIP Lump Sum:** ${vsip_amount:,.2f}")
+
+summary_data = {
+    "Income Type": [
+        "VSIP Lump Sum",
+        "DRP Leave Pay",
+        "Annual FERS Pension",
+        "Special Retirement Supplement (SRS)",
+        "Annual VA Disability",
+        "Annual FEHB Premium",
+        "Annual FEGLI Premium",
+        "Annual Living Expenses"
+    ],
+    "Amount ($)": [
+        vsip_amount,
+        total_admin_leave_income,
+        (high3_salary * 0.6 if current_age < 62 else high3_salary * 0.4) if disability_retirement else high3_salary * 0.01 * years_service * 0.9,
+        srs_annual,
+        va_monthly * 12,
+        fehb_premium * 12,
+        fegli_premium * 12,
+        monthly_expenses * 12
+    ]
+}
+
+import pandas as pd
+summary_df = pd.DataFrame(summary_data)
+st.dataframe(summary_df, use_container_width=True)
+
 st.success(f"**Combined Pre-Retirement Income:** ${total_preretirement_income:,.2f}")
-
-# --- Net Worth Over Time (Simulation) ---
-st.markdown("### 📈 Projected Net Worth Over Time")
-cash_savings = total_preretirement_income  # starting with DRP + VSIP
-safe_yield = 0.02
-tsp_growth_rate = 0.05
-fers_multiplier = 0.01
-survivor_reduction = 0.10
-fers_pension_annual = (high3_salary * 0.6 if current_age < 62 else high3_salary * 0.4) if disability_retirement else high3_salary * fers_multiplier * years_service * (1 - survivor_reduction)
-annual_fehb = fehb_premium * 12
-annual_fegli = fegli_premium * 12
-annual_va = va_monthly * 12
-annual_expenses = monthly_expenses * 12 + annual_fehb + annual_fegli
-
-net_worth = []
-years = list(range(current_age, 86))
-
-for year in years:
-    cash_savings += cash_savings * safe_yield
-    tsp_balance += tsp_balance * tsp_growth_rate
-    cash_savings += fers_pension_annual + srs_annual + annual_va
-    cash_savings -= annual_expenses
-    net_worth.append(cash_savings + tsp_balance)
-
-fig, ax = plt.subplots()
-ax.plot(years, net_worth, marker='o')
-ax.set_title("Projected Net Worth Timeline")
-ax.set_xlabel("Age")
-ax.set_ylabel("Total Net Worth ($)")
-ax.grid(True)
-st.pyplot(fig)
 
 # --- Footer ---
 st.markdown("---")
