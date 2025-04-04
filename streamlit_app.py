@@ -16,16 +16,14 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 🔼 Logo Top Left + Title Centered (using local file)
-logo_path = "simforia_logo.png"
-if os.path.exists(logo_path):
-    st.markdown(f"""
+# 🔼 Logo Top Left + Title Centered (using GitHub raw image URL)
+st.markdown(f"""
     <div style="display: flex; align-items: center; justify-content: space-between;">
         <div style="position: absolute; top: 15px; left: 15px;">
-            <img src="{logo_path}" alt="Simforia Logo" style="height: 70px;">
+            <img src='https://raw.githubusercontent.com/simforia/fers-retirement-app/main/simforia_logo.png' alt='Simforia Logo' style='height: 70px;'>
         </div>
     </div>
-    """, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 st.markdown("""
 <div style="text-align: center;">
@@ -63,7 +61,7 @@ with st.expander("✍️ Generate DRP Participation Letter"):
     user_series = st.text_input("Position Title / Series / Grade")
     user_component = st.text_input("Your Duty Station or Component")
 
-    if st.button("🔕️ Generate DRP Letter"):
+    if st.button("🔕 Generate DRP Letter"):
         letter_text = f"""
 Subject: Formal Election of DRP and VERA Participation
 
@@ -88,7 +86,7 @@ Respectfully,
 {user_component}
         """
         st.code(letter_text)
-        st.download_button("🔕️ Download Letter as TXT", data=letter_text, file_name="drp_request_letter.txt")
+        st.download_button("🔕 Download Letter as TXT", data=letter_text, file_name="drp_request_letter.txt")
 
 # 🔗 GPT Link for TSP / DRP / VERA Q&A
 st.markdown("---")
