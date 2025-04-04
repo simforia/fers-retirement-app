@@ -4,10 +4,24 @@ import pandas as pd
 from io import BytesIO
 from datetime import datetime
 
+# 🔍 Page Tracking for Metrics (Session ID)
+st.session_state.setdefault("visits", 0)
+st.session_state.visits += 1
+
 # 🖼️ Logo and Title Top-Aligned
 st.markdown("<h3 style='text-align: center;'>🧠 Simforia Intelligence Group</h3>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center;'><em>Retirement Optimization Toolkit – DRP / VERA / TSP Strategy Suite</em></p>", unsafe_allow_html=True)
-st.image("simforia_logo.png", width=200, use_column_width=False)
+st.image("simforia_logo.png", width=150)
+
+# 📘 Instructions
+with st.expander("ℹ️ How to Use This Tool"):
+    st.markdown("""
+    1. Enter your current age and total federal service.
+    2. Select whether you are participating in DRP.
+    3. Review your eligibility and key deadlines.
+    4. Use the GPT link at the bottom for deeper retirement strategy questions.
+    5. This tool tracks anonymous visits to help improve performance (local only).
+    """)
 
 # ✅ Required Inputs for Eligibility Logic
 current_age = st.number_input("Current Age", min_value=18, max_value=80)
@@ -73,7 +87,7 @@ if drp_participation == "Yes":
     st.markdown("✔️ Must sign written agreement before May 1, 2025")
     st.markdown("✔️ Must separate no later than September 30, 2025")
 
-# 💬 GPT Advisor Link (replacing iframe)
+# 💬 GPT Advisor Link
 st.markdown("---")
 st.markdown("### 💬 Have Questions About TSP, DRP, or VERA?")
 st.markdown("[🧠 Ask Simforia’s TSP Advisor GPT](https://chat.openai.com/g/g-67eea2244d2c819189bee5201afec0bc-tsp-advisor-by-simforia-intellegence-group) →")
