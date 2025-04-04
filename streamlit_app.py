@@ -17,12 +17,12 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # 🔼 Logo Top Left + Title Centered (using local file)
-logo_path = os.path.join("static", "simforia_logo.png")
+logo_path = "simforia_logo.png"
 if os.path.exists(logo_path):
     st.markdown(f"""
     <div style="display: flex; align-items: center; justify-content: space-between;">
         <div style="position: absolute; top: 15px; left: 15px;">
-            <img src="app/static/simforia_logo.png" alt="Simforia Logo" style="height: 70px;">
+            <img src="{logo_path}" alt="Simforia Logo" style="height: 70px;">
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -105,3 +105,4 @@ If you have any questions or feedback regarding the tool, please reach out to ou
   <button type="submit">Send Feedback</button>
 </form>
 """, unsafe_allow_html=True)
+
