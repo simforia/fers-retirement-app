@@ -127,25 +127,30 @@ total_preretirement_income = vsip_amount + total_admin_leave_income + fers_regul
 summary_data = {
     "Income Type": [
         "VSIP Lump Sum",
-        "DRP Leave Pay",
         "Annual FERS Pension",
         "Special Retirement Supplement (SRS)",
         "Annual VA Disability"
     ],
     "Amount ($)": [
         vsip_amount,
-        total_admin_leave_income,
         fers_regular,
         srs_annual,
         va_monthly * 12
     ]
 }
 
-import pandas as pd
 summary_df = pd.DataFrame(summary_data)
 st.dataframe(summary_df.style.format({"Amount ($)": "${:,.2f}"}), use_container_width=True)
 
 st.success(f"**Combined Pre-Retirement Income:** ${total_preretirement_income:,.2f}")
+
+# --- Net Cash After Expenses ---
+total_expenses = (fehb_premium + fegli_premium + monthly_expenses) * 12
+net_cash = total_preretirement_income - total_expenses
+
+st.markdown("### 💰 Net Cash After Expenses")
+st.info(f"**Annual Expenses (FEHB + FEGLI + Living):** ${total_expenses:,.2f}")
+st.success(f"**Net Cash Flow:** ${net_cash:,.2f}")
 
 # --- Footer ---
 st.markdown("---")
