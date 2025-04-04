@@ -5,9 +5,9 @@ from io import BytesIO
 from datetime import datetime
 
 # ✅ Required Inputs for Eligibility Logic
-current_age = st.number_input("Current Age", min_value=18, max_value=80, value=53)
-years_service = st.number_input("Years of Federal Service", min_value=0, max_value=50, value=27)
-drp_participation = st.selectbox("Participating in DRP?", ["Yes", "No"])
+current_age = st.number_input("Current Age", min_value=18, max_value=80)
+years_service = st.number_input("Years of Federal Service", min_value=0, max_value=50)
+drp_participation = st.selectbox("Participating in DRP?", ["", "Yes", "No"])
 
 # 🖼️ Logo and Title Top-Aligned Without Columns
 st.markdown("""
