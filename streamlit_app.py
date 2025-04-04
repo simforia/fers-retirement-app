@@ -30,7 +30,7 @@ with st.expander("ℹ️ How to Use This Tool"):
     1. Enter your current age and total federal service.
     2. Select whether you are participating in DRP.
     3. Review your eligibility and key deadlines.
-    4. Use the GPT link at the bottom for deeper VERA DRP and TSP insights.
+    4. Use the GPT link at the bottom for deeper TSP insights.
     5. Generate a DRP participation letter.
     """)
 
@@ -85,7 +85,7 @@ st.markdown("---")
 st.markdown("### 💬 Have Questions About TSP, DRP, or VERA?")
 st.markdown("[🧠 Ask Simforia’s TSP Advisor GPT — Comprehensive TSP Strategy and Projections](https://chat.openai.com/g/g-67eea2244d2c819189bee5201afec0bc-tsp-advisor-by-simforia-intellegence-group) →")
 
-# 📝 Provide Contact Information for Feedback
+# 🗘️ Provide Contact Information for Feedback
 st.markdown("### 📧 Contact Simforia Intelligence Group")
 st.markdown("""
 If you have any questions or feedback regarding the tool, please reach out to our team securely. 
@@ -94,4 +94,14 @@ If you have any questions or feedback regarding the tool, please reach out to ou
   <label>Your email (optional, for response):<br><input type="email" name="email"></label><br>
   <button type="submit">Send Feedback</button>
 </form>
+""", unsafe_allow_html=True)
+
+# ⚠️ Legal Disclaimer
+st.markdown("""
+---
+<small><strong>Important Notice: For Informational Purposes Only</strong><br>
+This app is intended to provide general information and estimation tools to assist federal employees in exploring early retirement options under the Federal Employees Retirement System (FERS), including programs such as Voluntary Early Retirement Authority (VERA), Voluntary Separation Incentive Pay (VSIP), and the Deferred Retirement Program (DRP).<br><br>
+While we strive to ensure accuracy, all projections, simulations, and financial analyses provided by this app are estimates only and should not be interpreted as official retirement guidance or a guarantee of future benefits. The calculations do not account for all variables, including changes to federal policy, tax laws, agency determinations, or individual circumstances.<br><br>
+This app is not affiliated with the U.S. Office of Personnel Management (OPM), the Department of Defense, or any federal agency. Users should consult with a certified financial advisor, HR specialist, or official retirement counselor before making any retirement-related decisions.<br><br>
+By using this app, you agree that the creators of the app are not responsible for any actions taken based on its output.</small>
 """, unsafe_allow_html=True)
