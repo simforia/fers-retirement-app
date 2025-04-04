@@ -33,6 +33,7 @@ with st.expander("ℹ️ How to Use This Tool"):
     3. Review your eligibility and key deadlines.
     4. Use the GPT link at the bottom for deeper TSP insights.
     5. Generate a DRP participation letter.
+    6. Read Disclaimer
     """)
 
 # ✅ Required Inputs for Eligibility Logic
@@ -88,7 +89,7 @@ st.write(f"**Projected TSP at Age 62:** ${future_tsp:,.2f}")
 # 🔘️ DRP Auto-Fill Letter Generator
 with st.expander("✍️ Generate DRP Participation Letter"):
     user_name = st.text_input("Your Full Name")
-    user_series = st.text_input("Position Title / Series / Grade")
+    user_series = st.text_input("Position Description (PD#)")
     user_component = st.text_input("Your Duty Station or Component")
 
     if st.button("🔕 Generate DRP Letter"):
