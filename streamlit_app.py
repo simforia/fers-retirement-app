@@ -16,15 +16,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 🔼 Logo Top Left + Title Centered (using GitHub raw image URL)
-st.markdown(f"""
-    <div style="display: flex; align-items: center; justify-content: space-between;">
-        <div style="position: absolute; top: 15px; left: 15px;">
-            <img src='https://raw.githubusercontent.com/simforia/fers-retirement-app/main/simforia_logo.png' alt='Simforia Logo' style='height: 70px;'>
-        </div>
-    </div>
-""", unsafe_allow_html=True)
-
+# 🔼 Title Centered Without Logo
 st.markdown("""
 <div style="text-align: center;">
     <h2 style="margin-bottom: 0;">Simforia Intelligence Group</h2>
@@ -103,4 +95,3 @@ If you have any questions or feedback regarding the tool, please reach out to ou
   <button type="submit">Send Feedback</button>
 </form>
 """, unsafe_allow_html=True)
-
