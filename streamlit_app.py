@@ -117,6 +117,35 @@ comp_df = comp_df.style.format({
 
 st.dataframe(comp_df, use_container_width=True)
 
+# --- Financial Summary (Corrected Totals) ---
+
+st.markdown("### 📋 Total Pre-Retirement Income Summary")
+
+total_preretirement_income = vsip_amount + total_admin_leave_income + fers_regular + srs_annual + (va_monthly * 12)
+
+summary_data = {
+    "Income Type": [
+        "VSIP Lump Sum",
+        "DRP Leave Pay",
+        "Annual FERS Pension",
+        "Special Retirement Supplement (SRS)",
+        "Annual VA Disability"
+    ],
+    "Amount ($)": [
+        vsip_amount,
+        total_admin_leave_income,
+        fers_regular,
+        srs_annual,
+        va_monthly * 12
+    ]
+}
+
+import pandas as pd
+summary_df = pd.DataFrame(summary_data)
+st.dataframe(summary_df.style.format({"Amount ($)": "${:,.2f}"}), use_container_width=True)
+
+st.success(f"**Combined Pre-Retirement Income:** ${total_preretirement_income:,.2f}")
+
 # --- Footer ---
 st.markdown("---")
 st.markdown("**Contact Simforia Intelligence Group**")
