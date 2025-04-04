@@ -9,9 +9,12 @@ current_age = st.number_input("Current Age", min_value=18, max_value=80, value=5
 years_service = st.number_input("Years of Federal Service", min_value=0, max_value=50, value=27)
 drp_participation = st.selectbox("Participating in DRP?", ["Yes", "No"])
 
-st.image("simforia_logo.png", width=200)
-st.markdown("### 🧠 Simforia Intelligence Group")
-st.markdown("_Retirement Optimization Toolkit – DRP / VERA / TSP Strategy Suite_")
+# 🖼️ Centered Logo and Title Using Streamlit Columns
+col1, col2, col3 = st.columns([1,2,1])
+with col2:
+    st.image("simforia_logo.png", width=200)
+    st.markdown("### 🧠 Simforia Intelligence Group")
+    st.markdown("_Retirement Optimization Toolkit – DRP / VERA / TSP Strategy Suite_")
 
 with st.expander("📢 Official DRP & VERA Guidance – Click to View"):
     st.markdown("""
@@ -71,3 +74,16 @@ if drp_participation == "Yes":
     st.markdown("✔️ Selected DRP participation")
     st.markdown("✔️ Must sign written agreement before May 1, 2025")
     st.markdown("✔️ Must separate no later than September 30, 2025")
+
+# 💬 GPT Advisor Embed
+st.markdown("---")
+st.markdown("### 💬 Have Questions About TSP, DRP, or VERA?")
+st.markdown("_You can chat directly with Simforia's TSP Advisor GPT below:_")
+
+st.components.v1.iframe(
+    src="https://chat.openai.com/g/g-67eea2244d2c819189bee5201afec0bc-tsp-advisor-by-simforia-intellegence-group",
+    height=600,
+    scrolling=True
+)
+
+st.markdown("If the chat doesn't load, [click here to open it in a new tab](https://chatgpt.com/g/g-67eea2244d2c819189bee5201afec0bc-tsp-advisor-by-simforia-intellegence-group).")
