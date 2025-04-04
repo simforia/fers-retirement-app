@@ -15,15 +15,18 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 🔼 Logo Centered Above Title
-logo_and_title = """
+# 🔼 Logo Top Left + Title Centered
+st.markdown("""
+<div style="display: flex; align-items: center; justify-content: space-between;">
+    <div style="position: absolute; top: 15px; left: 15px;">
+        <img src="https://raw.githubusercontent.com/simforia/fers-retirement-app/main/simforia_logo.png" alt="Simforia Logo" style="height: 70px;">
+    </div>
+</div>
 <div style="text-align: center;">
-    <img src="https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/simforia_logo.png" alt="Simforia Logo" style="height: 80px; margin-bottom: 10px;">
     <h2 style="margin-bottom: 0;">Simforia Intelligence Group</h2>
     <p style='font-size: 18px; margin-top: 0;'><em>Retirement Optimization Toolkit – DRP / VERA / TSP Strategy Suite</em></p>
 </div>
-"""
-st.markdown(logo_and_title, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 # 📘 Instructions
 with st.expander("ℹ️ How to Use This Tool"):
@@ -56,20 +59,26 @@ with st.expander("✍️ Generate DRP Participation Letter"):
 
     if st.button("🔕️ Generate DRP Letter"):
         letter_text = f"""
-Subject: Formal Request for Participation in DRP and VERA
+Subject: Formal Election of DRP and VERA Participation
 
-To Whom It May Concern,
+Dear [HR Representative],
 
-I am writing to formally request approval for my participation in the Department of Defense Deferred Resignation Program (DRP), and if eligible, to retire under the Voluntary Early Retirement Authority (VERA). I meet the eligibility criteria as defined by DoD guidelines, and I am fully prepared to comply with all required procedures.
+In accordance with the Department of Defense guidance issued April 1, 2025, and my verified eligibility for both the Deferred Resignation Program (DRP) and Voluntary Early Retirement Authority (VERA), I am formally submitting my intent to:
 
-As per the terms, I understand that my participation requires a signed separation agreement, and I agree to exit federal service by September 30, 2025. I request written confirmation of my selection for this program at your earliest convenience.
+- Elect participation in the DoD DRP, beginning administrative leave on or after May 1, 2025, and
+- Retire under the VERA authority, with an effective retirement date of September 30, 2025.
 
-I appreciate your attention to this matter, and I look forward to your confirmation.
+My current Position Description (PD#: {user_series}) explicitly confirms that I am not designated as mission-critical or emergency-essential, and I meet the service and age criteria for VERA ({current_age} years of age with {years_service} years of federal service).
 
-Sincerely,
+The DoD memo explicitly states that VERA may be elected in conjunction with or independent of DRP, and that exemptions must be rare and justified under 10 U.S.C. §129a with higher-level concurrence. I have seen no documentation exempting my position, nor have I received any such notice.
+
+I respectfully request written confirmation that my election of VERA + DRP is accepted, with my retirement date established as September 30, 2025 in accordance with the program rules.
+
+Thank you for your timely response and support. Please consider this message an official election of both authorities unless instructed otherwise.
+
+Respectfully,
 
 {user_name}
-{user_series}
 {user_component}
         """
         st.code(letter_text)
@@ -90,3 +99,4 @@ If you have any questions or feedback regarding the tool, please reach out to ou
   <button type="submit">Send Feedback</button>
 </form>
 """, unsafe_allow_html=True)
+
