@@ -19,8 +19,8 @@ st.markdown("""
 logo_and_title = """
 <div style="text-align: center;">
     <img src="https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/simforia_logo.png" alt="Simforia Logo" style="height: 80px; margin-bottom: 10px;">
-    <h2>Simforia Intelligence Group</h2>
-    <p style='font-size: 18px;'><em>Retirement Optimization Toolkit – DRP / VERA / TSP Strategy Suite</em></p>
+    <h2 style="margin-bottom: 0;">Simforia Intelligence Group</h2>
+    <p style='font-size: 18px; margin-top: 0;'><em>Retirement Optimization Toolkit – DRP / VERA / TSP Strategy Suite</em></p>
 </div>
 """
 st.markdown(logo_and_title, unsafe_allow_html=True)
