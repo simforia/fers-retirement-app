@@ -1,5 +1,5 @@
 
-# 🧠 FERS Early Retirement Strategy Tool (DRP/VERA)  https://fers-retirement-app-sek7cot859tdsnvdb4mzkw.streamlit.app/
+# 🧠 FERS Early Retirement Strategy Tool (DRP/VERA)  https://fers-retirement-app-5ihddywcneecems96k2hep.streamlit.app/
 
 This Streamlit-based web app helps U.S. federal employees simulate early retirement outcomes under the **Federal Employees Retirement System (FERS)**. It supports DRP, VERA, and VSIP options—while providing legal strategy and red-flag detection for command interference.
 
