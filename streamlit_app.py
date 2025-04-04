@@ -4,12 +4,7 @@ import pandas as pd
 from io import BytesIO
 from datetime import datetime
 
-# ✅ Required Inputs for Eligibility Logic
-current_age = st.number_input("Current Age", min_value=18, max_value=80)
-years_service = st.number_input("Years of Federal Service", min_value=0, max_value=50)
-drp_participation = st.selectbox("Participating in DRP?", ["", "Yes", "No"])
-
-# 🖼️ Logo and Title Top-Aligned Without Columns
+# 🖼️ Logo and Title Top-Aligned
 st.markdown("""
 <div style='text-align: center;'>
     <img src='simforia_logo.png' width='200'>
@@ -17,6 +12,11 @@ st.markdown("""
     <em>Retirement Optimization Toolkit – DRP / VERA / TSP Strategy Suite</em>
 </div>
 """, unsafe_allow_html=True)
+
+# ✅ Required Inputs for Eligibility Logic
+current_age = st.number_input("Current Age", min_value=18, max_value=80)
+years_service = st.number_input("Years of Federal Service", min_value=0, max_value=50)
+drp_participation = st.selectbox("Participating in DRP?", ["", "Yes", "No"])
 
 with st.expander("📢 Official DRP & VERA Guidance – Click to View"):
     st.markdown("""
