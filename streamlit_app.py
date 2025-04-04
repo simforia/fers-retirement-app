@@ -20,7 +20,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # 🔼 Logo and Title Top-Aligned
-st.markdown("<h2 style='text-align: center;'> Simforia Intelligence Group</h2>", unsafe_allow_html=True)
+st.markdown("<h2 style='text-align: center;'>🧠 Simforia Intelligence Group</h2>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center; font-size: 18px;'><em>Retirement Optimization Toolkit – DRP / VERA / TSP Strategy Suite</em></p>", unsafe_allow_html=True)
 st.image("simforia_logo.png", width=150)
 
@@ -97,14 +97,9 @@ Respectfully,
         st.code(letter_text)
         st.download_button("📅 Download Letter as TXT", data=letter_text, file_name="drp_request_letter.txt")
 
-# 📊 Safe Pie Chart Handling for Income Breakdown
-values = [high3_salary, vsip_offer, monthly_stipend * months_on_admin_leave]
-labels = ["High-3 Salary", "VSIP Offer", "Stipend Total"]
-
-if values and all(v > 0 for v in values):
-    fig1, ax1 = plt.subplots()
-    ax1.pie(values, labels=labels, autopct='%1.1f%%', startangle=90)
-    ax1.axis('equal')
-    st.pyplot(fig1)
-else:
-    st.warning("⚠️ Not enough data to generate pie chart. Please enter all required fields.")
+# 📝 Provide Contact Information for Feedback
+st.markdown("### 📧 Contact Simforia Intelligence Group")
+st.markdown("""
+    If you have any questions or feedback regarding the tool, please reach out to our team.
+    [Submit feedback here](https://formspree.io/f/mzzejjkk)
+""")
