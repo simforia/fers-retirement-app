@@ -169,6 +169,80 @@ net_cash = total_preretirement_income - total_expenses
 st.markdown("### 💰 Net Cash After Expenses")
 st.info(f"**Annual Expenses (FEHB + FEGLI + Living):** ${total_expenses:,.2f}")
 st.success(f"**Net Cash Flow:** ${net_cash:,.2f}")
+# --- PDF Retirement Report Generator ---
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+import io
+
+st.markdown("### 🖨️ Download Your Personalized Retirement Report")
+
+buffer = io.BytesIO()
+p = canvas.Canvas(buffer, pagesize=letter)
+width, height = letter
+
+# Header
+p.setFont("Helvetica-Bold", 16)
+p.drawString(50, 750, "Simforia Retirement Summary Report")
+p.line(50, 747, 550, 747)
+
+# User data
+p.setFont("Helvetica", 12)
+y = 720
+user_info = [
+    f"Current Age: {current_age}",
+    f"Years of Federal Service: {years_service}",
+    f"High-3 Salary: ${high3_salary:,.2f}",
+    f"TSP Balance: ${tsp_balance:,.2f}",
+    f"TSP Contribution Rate: {tsp_contribution_pct}%",
+    f"FEHB Plan: {fehb_plan} (${fehb_premium}/mo)",
+    f"FEGLI Option: {fegli_option} (${fegli_premium}/mo)",
+    f"Living Expenses: ${monthly_expenses:,.2f}/mo",
+    f"VA Disability: ${va_monthly}/mo",
+    f"Pension Type: {pension_label}"
+]
+
+for item in user_info:
+    p.drawString(50, y, item)
+    y -= 20
+
+# Income section
+y -= 10
+p.setFont("Helvetica-Bold", 12)
+p.drawString(50, y, "Income Summary:")
+p.setFont("Helvetica", 12)
+y -= 20
+if vsip_amount > 0:
+    p.drawString(50, y, f"- VSIP Lump Sum: ${vsip_amount:,.2f}")
+    y -= 20
+if total_admin_leave_income > 0:
+    p.drawString(50, y, f"- Admin Leave Income: ${total_admin_leave_income:,.2f}")
+    y -= 20
+p.drawString(50, y, f"- FERS Pension: ${selected_fers_income:,.2f}")
+y -= 20
+if not disability_retirement and srs_annual > 0:
+    p.drawString(50, y, f"- SRS (Special Retirement Supplement): ${srs_annual:,.2f}")
+    y -= 20
+if va_monthly > 0:
+    p.drawString(50, y, f"- Annual VA Disability: ${va_monthly * 12:,.2f}")
+    y -= 30
+
+# Totals
+p.setFont("Helvetica-Bold", 12)
+p.drawString(50, y, f"📊 Total Pre-Retirement Income: ${total_preretirement_income:,.2f}")
+y -= 20
+p.drawString(50, y, f"🧾 Annual Expenses: ${total_expenses:,.2f}")
+y -= 20
+p.drawString(50, y, f"💰 Net Cash Flow: ${net_cash:,.2f}")
+p.save()
+
+# Streamlit download button
+buffer.seek(0)
+st.download_button(
+    label="📄 Download PDF Retirement Report",
+    data=buffer,
+    file_name="Simforia_Retirement_Report.pdf",
+    mime="application/pdf"
+)
 
 # --- GPT Tool Link ---
 st.markdown("### 💬 Need Personalized TSP or Retirement Strategy Help?")
