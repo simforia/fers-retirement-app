@@ -48,6 +48,43 @@ survivor_percentage = 0.5 if include_survivor else 0.0
 
 cola_rate = st.slider("COLA Estimate (Annual % Starting at Age 62)", min_value=0.0, max_value=5.0, value=2.0, step=0.1)
 
+# 📊 Retirement Benefits Calculation
+st.markdown("### 📘 Estimated FERS Retirement Benefits")
+
+# TSP Inputs
+tsp_balance = st.number_input("Current TSP Balance ($)", min_value=0)
+tsp_contribution_pct = st.slider("TSP Contribution (% of Salary)", 0, 100, 5)
+
+# Constants
+fers_multiplier = 0.01
+social_security_estimate = 1800  # est. monthly SS at 62
+tsp_return_rate = 0.06
+retirement_age = current_age
+years_until_62 = max(0, 62 - current_age)
+tsp_contribution_annual = high3_salary * (tsp_contribution_pct / 100)
+
+# FERS Pension
+base_fers = high3_salary * fers_multiplier * years_service
+fers_annuity = base_fers * (1 - survivor_reduction)
+
+# SRS
+if current_age < 62 and years_service >= 20:
+    srs = (years_service / 40) * (social_security_estimate * 12)
+    srs_text = f"${srs:,.2f} annually until age 62"
+else:
+    srs = 0
+    srs_text = "Not eligible or over 62"
+
+# TSP Growth
+future_tsp = tsp_balance
+for _ in range(int(years_until_62)):
+    future_tsp = (future_tsp + tsp_contribution_annual) * (1 + tsp_return_rate)
+
+# Output
+st.write(f"**FERS Pension (Annual Estimate):** ${fers_annuity:,.2f}")
+st.write(f"**Special Retirement Supplement (SRS):** {srs_text}")
+st.write(f"**Projected TSP at Age 62:** ${future_tsp:,.2f}")
+
 # 🔘️ DRP Auto-Fill Letter Generator
 with st.expander("✍️ Generate DRP Participation Letter"):
     user_name = st.text_input("Your Full Name")
@@ -106,3 +143,4 @@ While we strive to ensure accuracy, all projections, simulations, and financial 
 This app is not affiliated with the U.S. Office of Personnel Management (OPM), the Department of Defense, or any federal agency. Users should consult with a certified financial advisor, HR specialist, or official retirement counselor before making any retirement-related decisions.<br><br>
 By using this app, you agree that the creators of the app are not responsible for any actions taken based on its output.</small>
 """, unsafe_allow_html=True)
+
