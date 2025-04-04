@@ -8,9 +8,18 @@ from datetime import datetime
 st.session_state.setdefault("visits", 0)
 st.session_state.visits += 1
 
+# 📐 Increase Global Font Size
+st.markdown("""
+    <style>
+        html, body, [class*="css"]  {
+            font-size: 18px !important;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
 # 🖼️ Logo and Title Top-Aligned
-st.markdown("<h3 style='text-align: center;'> Simforia Intelligence Group</h3>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center;'><em>Retirement Optimization Toolkit – DRP / VERA / TSP Strategy Suite</em></p>", unsafe_allow_html=True)
+st.markdown("<h2 style='text-align: center;'>🧠 Simforia Intelligence Group</h2>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; font-size: 18px;'><em>Retirement Optimization Toolkit – DRP / VERA / TSP Strategy Suite</em></p>", unsafe_allow_html=True)
 st.image("simforia_logo.png", width=150)
 
 # 📘 Instructions
@@ -20,12 +29,15 @@ with st.expander("ℹ️ How to Use This Tool"):
     2. Select whether you are participating in DRP.
     3. Review your eligibility and key deadlines.
     4. Use the GPT link at the bottom for deeper retirement strategy questions.
-        """)
+    5. This tool tracks anonymous visits to help improve performance (local only).
+    """)
 
 # ✅ Required Inputs for Eligibility Logic
 current_age = st.number_input("Current Age", min_value=18, max_value=80)
 years_service = st.number_input("Years of Federal Service", min_value=0, max_value=50)
 drp_participation = st.selectbox("Participating in DRP?", ["", "Yes", "No"])
+vsip_offer = st.number_input("VSIP Offer ($, optional)", min_value=0)
+high3_salary = st.number_input("High-3 Average Salary ($)", min_value=0)
 
 with st.expander("📢 Official DRP & VERA Guidance – Click to View"):
     st.markdown("""
@@ -85,6 +97,15 @@ if drp_participation == "Yes":
     st.markdown("✔️ Selected DRP participation")
     st.markdown("✔️ Must sign written agreement before May 1, 2025")
     st.markdown("✔️ Must separate no later than September 30, 2025")
+
+# 💸 Pension Estimator
+st.markdown("### 💰 Pension Estimate")
+pension = 0.01 * high3_salary * years_service
+st.info(f"Estimated FERS Annual Pension: ${pension:,.0f}")
+
+# 💵 VSIP Display
+if vsip_offer > 0:
+    st.success(f"VSIP Incentive Payment (Taxable): ${vsip_offer:,.0f}")
 
 # 💬 GPT Advisor Link
 st.markdown("---")
