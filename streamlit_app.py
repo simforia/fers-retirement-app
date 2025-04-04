@@ -1,10 +1,6 @@
 import streamlit as st
-import matplotlib.pyplot as plt
-import pandas as pd
-from io import BytesIO
 from datetime import datetime
 from fpdf import FPDF
-import requests
 
 # 🔍 Page Tracking for Metrics (Session ID)
 st.session_state.setdefault("visits", 0)
@@ -62,14 +58,6 @@ if all(v == 0 for v in [high3_salary, years_service, monthly_stipend, vsip_offer
 with st.expander("📈 What Does COLA Mean?"):
     st.markdown("Cost-of-Living Adjustments (COLA) begin at age 62 for FERS retirees and typically increase your pension annually. This slider allows you to estimate its effect.")
 
-# 📊 Lifecycle Fund Projection (Simplified Example)
-st.markdown("### 📊 Lifecycle Fund Projection (L-Fund)")
-tsp_start = st.number_input("Current TSP Balance ($)", min_value=0)
-tsp_growth_rate = 0.07
-years_until_62 = max(62 - current_age, 0)
-tsp_projected = tsp_start * ((1 + tsp_growth_rate) ** years_until_62)
-st.success(f"Projected TSP at Age 62 (7% annual growth): ${tsp_projected:,.0f}")
-
 # 🗘️ DRP Auto-Fill Letter Generator
 with st.expander("✍️ Generate DRP Participation Letter"):
     user_name = st.text_input("Your Full Name")
@@ -78,17 +66,17 @@ with st.expander("✍️ Generate DRP Participation Letter"):
 
     if st.button("📄 Generate DRP Letter"):
         letter_text = f"""
-Subject: Request for Participation in DRP and VERA
+Subject: Formal Request for Participation in DRP and VERA
 
 To Whom It May Concern,
 
-I am writing to formally request approval to participate in the Department of Defense Deferred Resignation Program (DRP), and if eligible, retire under the Voluntary Early Retirement Authority (VERA).
+I am writing to formally request approval for my participation in the Department of Defense Deferred Resignation Program (DRP) and, if eligible, to retire under the Voluntary Early Retirement Authority (VERA). I meet the eligibility criteria as defined by DoD guidelines, and I am fully prepared to comply with all required procedures. 
 
-I meet the eligibility criteria as defined by DoD and request written confirmation of my selection for this program. I understand participation requires a signed separation agreement and agree to exit federal service by September 30, 2025.
+As per the terms, I understand that my participation requires a signed separation agreement, and I agree to exit federal service by September 30, 2025. I request written confirmation of my selection for this program at your earliest convenience.
 
-Thank you for your consideration.
+I appreciate your attention to this matter, and I look forward to your confirmation.
 
-Respectfully,
+Sincerely,
 
 {user_name}  
 {user_series}  
@@ -96,10 +84,3 @@ Respectfully,
         """
         st.code(letter_text)
         st.download_button("📅 Download Letter as TXT", data=letter_text, file_name="drp_request_letter.txt")
-
-# 📝 Provide Contact Information for Feedback
-st.markdown("### 📧 Contact Simforia Intelligence Group")
-st.markdown("""
-    If you have any questions or feedback regarding the tool, please reach out to our team.
-    [Submit feedback here](https://formspree.io/f/mzzejjkk)
-""")
