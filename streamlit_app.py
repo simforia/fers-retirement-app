@@ -9,7 +9,7 @@ st.session_state.setdefault("visits", 0)
 st.session_state.visits += 1
 
 # 🖼️ Logo and Title Top-Aligned
-st.markdown("<h3 style='text-align: center;'>🧠 Simforia Intelligence Group</h3>", unsafe_allow_html=True)
+st.markdown("<h3 style='text-align: center;'> Simforia Intelligence Group</h3>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center;'><em>Retirement Optimization Toolkit – DRP / VERA / TSP Strategy Suite</em></p>", unsafe_allow_html=True)
 st.image("simforia_logo.png", width=150)
 
