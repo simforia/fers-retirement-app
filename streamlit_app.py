@@ -152,6 +152,10 @@ st.markdown("### 💰 Net Cash After Expenses")
 st.info(f"**Annual Expenses (FEHB + FEGLI + Living):** ${total_expenses:,.2f}")
 st.success(f"**Net Cash Flow:** ${net_cash:,.2f}")
 
+# --- GPT Tool Link ---
+st.markdown("### 💬 Need Personalized TSP or Retirement Strategy Help?")
+st.markdown("[🧠 Ask Simforia’s TSP Advisor GPT — Smart Projections, Risk Modeling, and Tax-Aware Retirement Analysis](https://chat.openai.com/g/g-67eea2244d2c819189bee5201afec0bc-tsp-advisor-by-simforia-intellegence-group)")
+
 # --- Footer ---
 st.markdown("---")
 st.markdown("**Contact Simforia Intelligence Group**")
