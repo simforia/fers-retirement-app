@@ -20,8 +20,7 @@ with st.expander("ℹ️ How to Use This Tool"):
     2. Select whether you are participating in DRP.
     3. Review your eligibility and key deadlines.
     4. Use the GPT link at the bottom for deeper retirement strategy questions.
-    5. This tool tracks anonymous visits to help improve performance (local only).
-    """)
+        """)
 
 # ✅ Required Inputs for Eligibility Logic
 current_age = st.number_input("Current Age", min_value=18, max_value=80)
