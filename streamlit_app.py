@@ -30,7 +30,7 @@ with st.expander("ℹ️ How to Use This Tool"):
     1. Enter your current age and total federal service.
     2. Select whether you are participating in DRP.
     3. Review your eligibility and key deadlines.
-    4. Use the GPT link at the bottom for deeper TSP insights.
+    4. Use the GPT link at the bottom for deeper VERA DRP and TSP insights.
     5. Generate a DRP participation letter.
     """)
 
