@@ -10,7 +10,7 @@ import requests
 st.session_state.setdefault("visits", 0)
 st.session_state.visits += 1
 
-# 📐 Increase Global Font Size
+# 📊 Increase Global Font Size
 st.markdown("""
     <style>
         html, body, [class*="css"]  {
@@ -19,7 +19,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 🖼️ Logo and Title Top-Aligned
+# 🔼 Logo and Title Top-Aligned
 st.markdown("<h2 style='text-align: center;'>🧠 Simforia Intelligence Group</h2>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center; font-size: 18px;'><em>Retirement Optimization Toolkit – DRP / VERA / TSP Strategy Suite</em></p>", unsafe_allow_html=True)
 st.image("simforia_logo.png", width=150)
@@ -48,9 +48,9 @@ survivor_reduction = 0.10 if include_survivor else 0.0
 survivor_percentage = 0.5 if include_survivor else 0.0
 cola_rate = st.slider("COLA Estimate (Annual % Starting at Age 62)", min_value=0.0, max_value=5.0, value=2.0, step=0.1)
 
-# 🧪 Inject Dummy Data if Inputs Are All Zero (for preview/testing)
+# 🗪 Inject Dummy Data if Inputs Are All Zero (for preview/testing)
 if all(v == 0 for v in [high3_salary, years_service, monthly_stipend, vsip_offer]):
-    st.warning("🧪 Demo Mode: Using sample data for preview (update fields to see your own projection).")
+    st.warning("🗪 Demo Mode: Using sample data for preview (update fields to see your own projection).")
     high3_salary = 90000
     years_service = 22
     monthly_stipend = 4000
@@ -70,7 +70,7 @@ years_until_62 = max(62 - current_age, 0)
 tsp_projected = tsp_start * ((1 + tsp_growth_rate) ** years_until_62)
 st.success(f"Projected TSP at Age 62 (7% annual growth): ${tsp_projected:,.0f}")
 
-# 📝 DRP Auto-Fill Letter Generator
+# 🗘️ DRP Auto-Fill Letter Generator
 with st.expander("✍️ Generate DRP Participation Letter"):
     user_name = st.text_input("Your Full Name")
     user_series = st.text_input("Position Title / Series / Grade")
@@ -95,4 +95,16 @@ Respectfully,
 {user_component}
         """
         st.code(letter_text)
-        st.download_button("📥 Download Letter as TXT", data=letter_text, file_name="drp_request_letter.txt")
+        st.download_button("📅 Download Letter as TXT", data=letter_text, file_name="drp_request_letter.txt")
+
+# 📊 Safe Pie Chart Handling for Income Breakdown
+values = [high3_salary, vsip_offer, monthly_stipend * months_on_admin_leave]
+labels = ["High-3 Salary", "VSIP Offer", "Stipend Total"]
+
+if values and all(v > 0 for v in values):
+    fig1, ax1 = plt.subplots()
+    ax1.pie(values, labels=labels, autopct='%1.1f%%', startangle=90)
+    ax1.axis('equal')
+    st.pyplot(fig1)
+else:
+    st.warning("⚠️ Not enough data to generate pie chart. Please enter all required fields.")
