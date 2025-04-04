@@ -1,6 +1,7 @@
 import streamlit as st
 from datetime import datetime
 from fpdf import FPDF
+import os
 
 # 🔍 Page Tracking for Metrics (Session ID)
 st.session_state.setdefault("visits", 0)
@@ -15,13 +16,18 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 🔼 Logo Top Left + Title Centered
-st.markdown("""
-<div style="display: flex; align-items: center; justify-content: space-between;">
-    <div style="position: absolute; top: 15px; left: 15px;">
-        <img src="https://raw.githubusercontent.com/simforia/fers-retirement-app/main/simforia_logo.png" alt="Simforia Logo" style="height: 70px;">
+# 🔼 Logo Top Left + Title Centered (using local file)
+logo_path = os.path.join("static", "simforia_logo.png")
+if os.path.exists(logo_path):
+    st.markdown(f"""
+    <div style="display: flex; align-items: center; justify-content: space-between;">
+        <div style="position: absolute; top: 15px; left: 15px;">
+            <img src="app/static/simforia_logo.png" alt="Simforia Logo" style="height: 70px;">
+        </div>
     </div>
-</div>
+    """, unsafe_allow_html=True)
+
+st.markdown("""
 <div style="text-align: center;">
     <h2 style="margin-bottom: 0;">Simforia Intelligence Group</h2>
     <p style='font-size: 18px; margin-top: 0;'><em>Retirement Optimization Toolkit – DRP / VERA / TSP Strategy Suite</em></p>
@@ -99,4 +105,3 @@ If you have any questions or feedback regarding the tool, please reach out to ou
   <button type="submit">Send Feedback</button>
 </form>
 """, unsafe_allow_html=True)
-
