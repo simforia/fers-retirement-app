@@ -130,32 +130,37 @@ st.dataframe(comp_df, use_container_width=True)
 # --- Financial Summary (Corrected Totals) ---
 st.markdown("### 📋 Total Pre-Retirement Income Summary")
 
-total_preretirement_income = (
-    vsip_amount +
-    total_admin_leave_income +
-    selected_fers_income +
-    srs_annual +
-    (va_monthly * 12)
-)
+# Build the income types and values based on scenario
+income_labels = ["VSIP Lump Sum"]
+income_values = [vsip_amount]
 
+if disability_retirement:
+    income_labels.append("Annual FERS Pension (Disability Retirement)")
+    income_values.append(fers_disability)
+else:
+    income_labels.append("Annual FERS Pension (Regular FERS Retirement)")
+    income_values.append(fers_regular)
+    if srs_annual > 0:
+        income_labels.append("Special Retirement Supplement (SRS)")
+        income_values.append(srs_annual)
+
+# Always add VA Disability if present
+if va_monthly > 0:
+    income_labels.append("Annual VA Disability")
+    income_values.append(va_monthly * 12)
+
+# Build the DataFrame
 summary_data = {
-    "Income Type": [
-        "VSIP Lump Sum",
-        f"Annual FERS Pension ({pension_label})",
-        "Special Retirement Supplement (SRS)",
-        "Annual VA Disability"
-    ],
-    "Amount ($)": [
-        vsip_amount,
-        selected_fers_income,
-        srs_annual,
-        va_monthly * 12
-    ]
+    "Income Type": income_labels,
+    "Amount ($)": income_values
 }
-
 summary_df = pd.DataFrame(summary_data)
+
+total_preretirement_income = sum(income_values)
+
 st.dataframe(summary_df.style.format({"Amount ($)": "${:,.2f}"}), use_container_width=True)
 st.success(f"**Combined Pre-Retirement Income:** ${total_preretirement_income:,.2f}")
+
 
 # --- Net Cash After Expenses ---
 total_expenses = (fehb_premium + fegli_premium + monthly_expenses) * 12
