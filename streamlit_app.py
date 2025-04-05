@@ -38,62 +38,10 @@ st.markdown(
 # --- Tax Awareness Toggle ---
 with st.expander("⚖️ Tax Withholding Simulation"):
     apply_tax = st.checkbox("Apply Estimated Federal Tax Withholding?", value=False)
-    progressive = st.checkbox("Use Progressive Tax Brackets (Federal)?", value=False)
-
-    def federal_bracket_tax(income):
-        brackets = [(11000, 0.10), (44725, 0.12), (95375, 0.22), (182100, 0.24), (231250, 0.32), (578125, 0.35), (float("inf"), 0.37)]
-        tax = 0
-        prev = 0
-        for cap, rate in brackets:
-            if income > cap:
-                tax += (cap - prev) * rate
-                prev = cap
-            else:
-                tax += (income - prev) * rate
-                break
-        return income - tax
-
-    tax_rate = st.slider("Estimated Flat Federal Tax Rate (%)", min_value=0, max_value=40, value=15)
-    apply_state_tax = st.checkbox("Include State/Local Tax?")
-    use_state_presets = st.checkbox("Use State Preset Rates")
-
-    state_tax_rate = 0
-    if apply_state_tax:
-        if use_state_presets:
-            state = st.selectbox("Select Your State", ["None", "CA", "TX", "NY", "PA", "FL", "VA"], index=3)
-            state_rates = {"CA": 9.3, "TX": 0.0, "NY": 6.5, "PA": 3.07, "FL": 0.0, "VA": 5.75, "None": 0.0}
-            state_tax_rate = state_rates.get(state, 0.0)
-        else:
-            state_tax_rate = st.slider("Estimated State/Local Tax Rate (%)", min_value=0, max_value=15, value=5)
-
-    combined_tax_rate = tax_rate + state_tax_rate
-
-    st.markdown(f"\n🔍 *Post-tax amounts reflect a combined estimated tax rate of {combined_tax_rate}%*")
-
-    # Roth vs. Traditional TSP Simulation
-    roth_vs_trad = st.radio("TSP Type", ["Traditional (taxed on withdrawal)", "Roth (taxed before contribution)"])
-    tsp_taxed = True if roth_vs_trad == "Traditional (taxed on withdrawal)" else False
-
-# --- TSP Tax Behavior ---
-def tsp_tax_behavior(amount):
-    if not apply_tax or not tsp_taxed:
-        return amount
-    if progressive:
-        return federal_bracket_tax(amount)
-    return amount * (1 - (combined_tax_rate / 100))
+    tax_rate = st.slider("Estimated Tax Rate (%)", min_value=0, max_value=40, value=15)
 
 # --- Export Comparison Table CSV ---
 if "df_compare" in locals():
-    if apply_tax:
-        if progressive:
-            df_compare["Normal"] = df_compare["Normal"].apply(federal_bracket_tax)
-            df_compare["VERA"] = df_compare["VERA"].apply(federal_bracket_tax)
-            df_compare["DRP"] = df_compare["DRP"].apply(federal_bracket_tax)
-        else:
-            df_compare["Normal"] = df_compare["Normal"].apply(lambda x: x * (1 - (combined_tax_rate / 100)))
-            df_compare["VERA"] = df_compare["VERA"].apply(lambda x: x * (1 - (combined_tax_rate / 100)))
-            df_compare["DRP"] = df_compare["DRP"].apply(lambda x: x * (1 - (combined_tax_rate / 100)))
-
     with st.expander("📤 Export Retirement Income Comparison Table"):
         csv_compare = df_compare.to_csv(index=False).encode("utf-8")
         st.download_button(
@@ -131,26 +79,11 @@ if "df_compare" in locals():
 
 # --- Apply Tax Rate ---
 def apply_tax_withholding(amount):
-    if not apply_tax:
-        return amount
-    if progressive:
-        return federal_bracket_tax(amount)
-    return amount * (1 - (combined_tax_rate / 100))
-
-# --- Survivor Benefit Election ---
-survivor_elected = st.checkbox("Elect Survivor Benefit (Reduced Pension for Spouse Continuation)?")
-survivor_pct = st.slider("Survivor Benefit Percentage of Base Pension", 0.0, 1.0, 0.5, step=0.05)
-survivor_cost_pct = st.slider("Monthly Reduction to Cover Survivor Option (%)", 0.0, 0.2, 0.10, step=0.01)
-
-if survivor_elected:
-    selected_fers_income *= (1 - survivor_cost_pct)
-    survivor_income = selected_fers_income * survivor_pct
-    st.markdown(f"**Adjusted Pension (with Survivor Reduction):** ${selected_fers_income:,.2f}")
-    st.markdown(f"**Future Survivor Income (if elected):** ${survivor_income:,.2f} annually")
+    return amount * (1 - (tax_rate / 100)) if apply_tax else amount
 
 # Apply tax withholding to relevant fields
 selected_fers_income = apply_tax_withholding(selected_fers_income)
-tsp_annual_income = tsp_tax_behavior(tsp_annual_income)
+tsp_annual_income = apply_tax_withholding(tsp_annual_income)
 va_annual = va_monthly * 12
 va_annual = apply_tax_withholding(va_annual)
 srs_annual = apply_tax_withholding(srs_annual)
@@ -166,34 +99,8 @@ else:
 if va_monthly > 0:
     income_values.append(va_annual)
 
-income_values.append(tsp_annual_income)
-
 total_preretirement_income = sum(income_values)
-total_expenses = (fegli_premium + fehb_premium + monthly_expenses) * 12
-net_cash = total_preretirement_income - total_expenses
-
-# --- Post-Tax Monthly Breakdown ---
-st.markdown("### 💸 Monthly Post-Tax Income Breakdown")
-monthly_post_tax = total_preretirement_income / 12
-monthly_expense_total = total_expenses / 12
-monthly_surplus = monthly_post_tax - monthly_expense_total
-
-breakdown_df = pd.DataFrame({
-    "Metric": ["Post-Tax Monthly Income", "Monthly Expenses", "Monthly Surplus"],
-    "Amount ($)": [monthly_post_tax, monthly_expense_total, monthly_surplus],
-})
-st.dataframe(breakdown_df.style.format({"Amount ($)": "${:,.2f}"}), use_container_width=True)
-
-fig, ax = plt.subplots()
-ax.pie([monthly_post_tax, monthly_expense_total, monthly_surplus], 
-       labels=["Income", "Expenses", "Surplus"], 
-       autopct='%1.1f%%', startangle=90)
-ax.axis('equal')
-st.pyplot(fig)
-
-# --- Continue with existing logic ---
-# (Remaining code continues unchanged from here)
-
+net_cash = total_preretirement_income - ((fegli_premium + fehb_premium + monthly_expenses) * 12)
 
 # --- Continue with existing logic ---
 # (Remaining code continues unchanged from here)
