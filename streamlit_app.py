@@ -9,7 +9,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
 # --- Setup & Session State ---
-st.session_state.setdefault("visits", 1337)
+st.session_state.setdefault("visits", 1336)
 st.session_state.visits += 1
 
 st.markdown(
@@ -803,67 +803,90 @@ system_type = st.radio(
 )
 
 # --- Compare Retirement Income Over Different Ages (VERA/DRP) ---
-with st.expander("📊 Compare Retirement Income Over Different Ages (VERA/DRP)"):
-    st.markdown("""
-    This section will estimate your approximate **annual retirement income** at each 
-    retirement age in a user-selected range, for different scenarios:
 
-    - **Normal** (no VERA, no DRP)
-    - **VERA** (if age ≥ 50 and you have enough service to qualify)
-    - **DRP** (adds an admin leave or lump sum if DRP is elected)
+# Define the function for calculating retirement income
+def calc_retirement_income(age: int, base_service: float, with_vera=False, with_drp=False, separation_age=50) -> float:
+    """
+    Calculate annual retirement income for a given age, base service,
+    and scenario (VERA, DRP).
+    
+    :param age: The retirement age to calculate for.
+    :param base_service: The user's years of federal service.
+    :param with_vera: Whether VERA is applied.
+    :param with_drp: Whether DRP is applied.
+    :param separation_age: The age at which DRP lumpsum is applied (e.g., user final separation).
+    :return: The annual retirement income for the given scenario.
+    """
+    # Hypothetical service
+    hypothetical_service = base_service + max(0, age - current_age)
+    if hypothetical_service < 0:
+        hypothetical_service = 0
 
-    **Note:** This is a naive example. In production, refine the 
-    logic to reflect TSP penalty rules, early retirement offsets, etc.
-    """)
-    min_compare_age = st.number_input("Minimum age to compare", min_value=40, max_value=80, value=50)
-    max_compare_age = st.number_input("Maximum age to compare", min_value=40, max_value=80, value=62)
-    if min_compare_age > max_compare_age:
-        st.error("Error: Minimum age can't exceed maximum age.")
-    else:
-        simulate_drp = drp_elected
-        results = []
-        def calc_retirement_income(age: int, base_service: float, with_vera=False, with_drp=False) -> float:
-            hypothetical_service = base_service + max(0, age - current_age)
-            if hypothetical_service < 0:
-                hypothetical_service = 0
-            pension = high3_salary * 0.01 * hypothetical_service * 0.9
-            if system_type == "CSRS":
-                pension = high3_salary * 0.0185 * hypothetical_service
-            srs_amt = 0
-            if system_type == "FERS" and age < 62 and hypothetical_service >= 20:
-                srs_amt = srs_annual
-            hypothetical_tsp = tsp_balance * 0.04
-            if age < 55 and not with_vera:
-                hypothetical_tsp *= 0.90
-            lumpsum_drp = 0
-            if with_drp:
-                lumpsum_drp = total_admin_leave_income
-            total_annual = pension + srs_amt + hypothetical_tsp + lumpsum_drp + (va_monthly * 12)
-            return total_annual
-        for age in range(int(min_compare_age), int(max_compare_age) + 1):
-            normal_inc = calc_retirement_income(age, years_service, with_vera=False, with_drp=False)
-            vera_inc = calc_retirement_income(age, years_service, with_vera=True, with_drp=False)
-            drp_inc = 0
-            if simulate_drp:
-                drp_inc = calc_retirement_income(age, years_service, with_vera=False, with_drp=True)
-            results.append({
-                "Age": age,
-                "Normal": normal_inc,
-                "VERA": vera_inc,
-                "DRP": drp_inc
-            })
-        df_compare = pd.DataFrame(results)
-        st.dataframe(df_compare.style.format("{:,.0f}"))
-        fig, ax = plt.subplots()
-        ax.plot(df_compare["Age"], df_compare["Normal"], label="Normal", marker="o")
-        ax.plot(df_compare["Age"], df_compare["VERA"], label="VERA", marker="s", linestyle="--")
-        if simulate_drp:
-            ax.plot(df_compare["Age"], df_compare["DRP"], label="DRP", marker="^", linestyle=":")
-        ax.set_xlabel("Retirement Age")
-        ax.set_ylabel("Approx. Annual Income ($)")
-        ax.set_title(f"Retirement Income vs Age: {system_type} Normal / VERA / DRP")
-        ax.legend()
-        st.pyplot(fig)
+    # Basic pension
+    pension = high3_salary * 0.01 * hypothetical_service * 0.9
+    if system_type == "CSRS":
+        pension = high3_salary * 0.0185 * hypothetical_service
+
+    # SRS (FERS only if <62 & service >= 20)
+    srs_amt = 0
+    if system_type == "FERS" and age < 62 and hypothetical_service >= 20:
+        srs_amt = srs_annual
+
+    # TSP approximate
+    hypothetical_tsp = tsp_balance * 0.04
+    if age < 55 and not with_vera:
+        hypothetical_tsp *= 0.90  # apply early penalty
+
+    # DRP lumpsum as a one-time addition at separation_age
+    lumpsum_drp = 0
+    if with_drp and age == separation_age:
+        lumpsum_drp = total_admin_leave_income
+
+    # Annual VA disability
+    va_annual = va_monthly * 12
+
+    total_annual = pension + srs_amt + hypothetical_tsp + lumpsum_drp + va_annual
+    return total_annual
+
+# Now, generate the retirement income comparison data
+min_compare_age = st.number_input("Minimum age to compare", min_value=40, max_value=80, value=50)
+max_compare_age = st.number_input("Maximum age to compare", min_value=40, max_value=80, value=62)
+
+if min_compare_age > max_compare_age:
+    st.error("Error: Minimum age can't exceed maximum age.")
+else:
+    simulate_drp = drp_elected  # from earlier DRP checkbox
+    results = []
+    for age in range(int(min_compare_age), int(max_compare_age) + 1):
+        normal_inc = calc_retirement_income(age, years_service, with_vera=False, with_drp=False)
+        vera_inc = calc_retirement_income(age, years_service, with_vera=True, with_drp=False)
+        drp_inc = calc_retirement_income(age, years_service, with_vera=False, with_drp=True, separation_age=52) if simulate_drp else 0
+        
+        results.append({
+            "Age": age,
+            "Normal": normal_inc,
+            "VERA": vera_inc,
+            "DRP": drp_inc
+        })
+    
+    df_compare = pd.DataFrame(results)
+    st.dataframe(df_compare.style.format("{:,.0f}"), use_container_width=True)
+    
+    # Create the chart with the vertical line at age 62
+    fig, ax = plt.subplots()
+    ax.plot(df_compare["Age"], df_compare["Normal"], label="Normal", marker="o")
+    ax.plot(df_compare["Age"], df_compare["VERA"], label="VERA", marker="s", linestyle="--")
+    if simulate_drp:
+        ax.plot(df_compare["Age"], df_compare["DRP"], label="DRP", marker="^", linestyle=":")
+    
+    # Add vertical line at age 62
+    ax.axvline(62, color='gray', linestyle='--', label="Age 62 – Social Security starts / SRS ends")
+    
+    ax.set_xlabel("Retirement Age")
+    ax.set_ylabel("Approx. Annual Income ($)")
+    ax.set_title(f"Retirement Income vs Age: {system_type} Normal / VERA / DRP")
+    ax.legend()
+    st.pyplot(fig)
 
 # --- PDF Retirement Report Generator ---
 st.markdown("### 🖨️ Download Your Personalized Retirement Report")
