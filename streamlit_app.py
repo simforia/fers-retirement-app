@@ -693,7 +693,7 @@ st.download_button(
     mime="application/pdf"
 )
 
-# --- TSP Advisor GPT Button ---
+# --- TSP Advisor GPT Hyperlink ---
 st.markdown("### TSP Advisor GPT Link")
 
 # A short descriptive blurb
@@ -705,10 +705,12 @@ Powered by real-world economic insight and military-grade planning discipline.
 
 advisor_url = "https://chatgpt.com/g/g-67eea2244d2c819189bee5201afec0bc-tsp-advisor-by-simforia-intelligence-group"
 
-# Create a button that, when clicked, opens the link in a new tab/window
-if st.button("Open TSP Advisor GPT in new tab"):
-    js_code = f"window.open('{advisor_url}')"
-    st.components.v1.html(f"<script>{js_code}</script>", height=0)
+st.markdown(f"[**➡️ Click here to open TSP Advisor GPT**]({advisor_url})")
+
+st.markdown("""
+_If the link does not open automatically in a new tab, 
+right-click and select "Open Link in New Tab."_ 
+""")
 
 # --- Footer ---
 st.markdown("---")
