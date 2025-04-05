@@ -41,7 +41,7 @@ with st.expander("ℹ️ How to Use This Tool"):
         """
     1. Enter your current age and total federal service.
     2. Input your TSP balance, high-3 salary, and contribution rate.
-    3. Select your FEHB and FEGLI retirement coverage.
+    3. Select your FEHB/CHAMPVA and FEGLI retirement coverage.
     4. View projected growth, income, and milestone ages.
     5. Compare monthly income streams.
     6. Visualize projected net worth including VA, TSP, FERS, SRS, FEHB, and DRP.
@@ -104,15 +104,43 @@ st.info(penalty_note)
 tsp_annual_income = tsp_withdrawal_balance * 0.04
 st.markdown(f"**Estimated Annual TSP Income:** ${tsp_annual_income:,.2f}")
 
-# --- FEHB & FEGLI Selection ---
-fehb_plan = st.selectbox("FEHB Plan Type", ["None", "Self Only", "Self + One", "Family"])
-fehb_costs = {"None": 0, "Self Only": 300, "Self + One": 550, "Family": 750}
-fehb_premium = fehb_costs[fehb_plan]
+# --- FEHB / CHAMPVA & FEGLI Selection ---
+st.markdown("### FEHB / CHAMPVA & FEGLI Selection")
+health_coverage_choice = st.radio(
+    "Select your primary health coverage:",
+    ("None", "FEHB", "CHAMPVA")
+)
 
+if health_coverage_choice == "None":
+    fehb_premium = 0
+    st.markdown("No primary coverage selected. Make sure this matches your real situation.")
+elif health_coverage_choice == "FEHB":
+    # If user selects FEHB, let them pick a plan
+    fehb_plan = st.selectbox("FEHB Plan Type", ["Self Only", "Self + One", "Family"])
+    fehb_costs = {"Self Only": 300, "Self + One": 550, "Family": 750}
+    fehb_premium = fehb_costs[fehb_plan]
+    st.markdown(f"**Selected FEHB Plan:** {fehb_plan}, Monthly Premium = ${fehb_premium}")
+elif health_coverage_choice == "CHAMPVA":
+    fehb_premium = 0  # For simulation: No FEHB cost if using CHAMPVA
+    st.markdown(
+        """
+    **CHAMPVA** (Civilian Health and Medical Program of the Department of Veterans Affairs)
+    is a comprehensive health care benefits program in which the VA shares the cost of covered
+    health care services and supplies with eligible beneficiaries (e.g., spouse/child of a vet
+    rated permanently & totally disabled, or survivors of a vet who died from a service-related
+    disability). 
+    
+    For more information, see the official [CHAMPVA Program page](https://www.va.gov/COMMUNITYCARE/programs/dependents/champva/).
+    """
+    )
+    st.markdown("No additional monthly premium is assumed here for demonstration.")
+
+# FEGLI Option
 fegli_option = st.selectbox("FEGLI Option", ["None", "Basic", "Basic + Option A", "Basic + Option B"])
 fegli_costs = {"None": 0, "Basic": 50, "Basic + Option A": 70, "Basic + Option B": 90}
 fegli_premium = fegli_costs[fegli_option]
 
+# Other living expenses input
 monthly_expenses = st.number_input("Other Monthly Living Expenses ($)", min_value=0, value=3000)
 
 # --- VA Disability ---
@@ -187,7 +215,7 @@ comparison_data = {
     "Monthly Pension ($)": [monthly_regular, monthly_disability],
     "SRS Eligible": ["Yes" if srs > 0 else "No"] * 2,
     "VA Monthly Added ($)": [va_monthly] * 2,
-    "FEHB/FEGLI Annual Cost ($)": [fehb_premium * 12 + fegli_premium * 12] * 2,
+    "FEHB/FEGLI Annual Cost ($)": [(fegli_premium + fehb_premium) * 12] * 2,
 }
 comp_df = pd.DataFrame(comparison_data)
 comp_df = comp_df.style.format(
@@ -228,7 +256,7 @@ st.dataframe(summary_df.style.format({"Amount ($)": "${:,.2f}"}), use_container_
 st.success(f"**Combined Pre-Retirement Income:** ${total_preretirement_income:,.2f}")
 
 # --- Net Cash After Expenses ---
-total_expenses = (fehb_premium + fegli_premium + monthly_expenses) * 12
+total_expenses = (fegli_premium + fehb_premium + monthly_expenses) * 12
 net_cash = total_preretirement_income - total_expenses
 st.markdown("### 💰 Net Cash After Expenses")
 st.info(f"**Annual Expenses (FEHB + FEGLI + Living):** ${total_expenses:,.2f}")
@@ -421,7 +449,7 @@ with st.expander("🔍 Sensitivity Analysis: Net Cash Flow vs. Years of Service"
         # For simplicity, recalc a theoretical pension based on y years of service.
         pension_value = high3_salary * 0.01 * y * 0.9
         total_income = vsip_amount + pension_value
-        total_exp = (fehb_premium + fegli_premium + monthly_expenses) * 12
+        total_exp = (fegli_premium + fehb_premium + monthly_expenses) * 12
         net_cash_sensitivity.append(total_income - total_exp)
     fig, ax = plt.subplots()
     ax.plot(years_range, net_cash_sensitivity, marker="o")
@@ -462,7 +490,7 @@ user_info = [
     f"High-3 Salary: ${high3_salary:,.2f}",
     f"TSP Balance: ${tsp_balance:,.2f}",
     f"TSP Contribution Rate: {tsp_contribution_pct}%",
-    f"FEHB Plan: {fehb_plan} (${fehb_premium}/mo)",
+    f"FEHB Plan: {health_coverage_choice} (${fehb_premium}/mo)",
     f"FEGLI Option: {fegli_option} (${fegli_premium}/mo)",
     f"Living Expenses: ${monthly_expenses:,.2f}/mo",
     f"VA Disability: ${va_monthly}/mo",
@@ -511,7 +539,7 @@ if va_monthly > 0:
 p.setFont("Helvetica-Bold", 12)
 p.drawString(50, y, f"📊 Total Pre-Retirement Income: ${total_preretirement_income:,.2f}")
 y -= 20
-p.drawString(50, y, f"🧾 Annual Expenses: ${total_expenses:,.2f}")
+p.drawString(50, y, f"🧾 Annual Expenses: ${(fegli_premium + fehb_premium + monthly_expenses) * 12:,.2f}")
 y -= 20
 p.drawString(50, y, f"💰 Net Cash Flow: ${net_cash:,.2f}")
 y -= 30
