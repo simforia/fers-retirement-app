@@ -14,7 +14,7 @@ st.session_state.visits += 1
 
 st.markdown("""
     <style>
-        html, body, [class*="css"]  {
+        html, body, [class*="css"] {
             font-size: 18px !important;
         }
     </style>
@@ -40,6 +40,22 @@ with st.expander("ℹ️ How to Use This Tool"):
     6. Visualize projected net worth including VA, TSP, FERS, SRS, FEHB, and DRP.
     """)
 
+# --- FAQ / Help Section ---
+with st.expander("❓ FAQ / Help"):
+    st.markdown("""
+    **SEPP (Substantially Equal Periodic Payments):**  
+    A method to withdraw from your retirement savings without incurring the 10% early withdrawal penalty if you retire before age 59½. Payments are fixed and continue for at least 5 years or until you reach 59½ (whichever is longer).
+    
+    **Age 55 Rule:**  
+    For federal employees retiring directly (like via VERA) at age 55 or older in the same calendar year, TSP withdrawals are penalty-free.
+    
+    **Pension Calculations:**  
+    - **Regular FERS Pension:** Calculated as High-3 Salary * 1% * Years of Service * 0.9  
+    - **Disability FERS Pension:** Calculated as High-3 Salary * (0.6 if under 62, otherwise 0.4)
+    
+    Adjust the inputs above to see how changes in your service years or salary impact your final pension.
+    """)
+
 # --- Inputs ---
 current_age = st.number_input("Current Age", min_value=18, max_value=80)
 years_service = st.number_input("Years of Federal Service", min_value=0, max_value=50)
@@ -47,6 +63,32 @@ high3_salary = st.number_input("High-3 Average Salary ($)", min_value=0)
 tsp_balance = st.number_input("Current TSP Balance ($)", min_value=0)
 tsp_contribution_pct = st.slider("TSP Contribution (% of Salary)", 0, 100, 5)
 tsp_contribution_annual = high3_salary * (tsp_contribution_pct / 100)
+
+# --- TSP Withdrawal Calculation (For VERA Retirement) ---
+st.markdown("### TSP Withdrawal Calculation (For VERA Retirement)")
+tsp_option = st.radio("Select TSP Withdrawal Option:", 
+                      ("Withdraw now (penalty applies if under 55)",
+                       "Delay withdrawal until 59½ (No withdrawal now)",
+                       "Set up SEPP plan"))
+if current_age < 55:
+    if tsp_option == "Withdraw now (penalty applies if under 55)":
+         tsp_withdrawal_balance = tsp_balance * 0.9  # 10% penalty applies
+         penalty_note = "A 10% penalty applies on withdrawal."
+    elif tsp_option == "Set up SEPP plan":
+         tsp_withdrawal_balance = tsp_balance
+         penalty_note = "No penalty applied via SEPP plan."
+    else:  # Delay withdrawal until 59½
+         tsp_withdrawal_balance = 0
+         penalty_note = "No withdrawal now. Funds remain untouched until 59½."
+else:
+    # For age 55 or older, withdrawal is penalty-free.
+    tsp_withdrawal_balance = tsp_balance
+    penalty_note = "Withdrawal is penalty-free."
+
+st.info(penalty_note)
+# For this example, we assume a 4% annual withdrawal rate on the accessible TSP balance.
+tsp_annual_income = tsp_withdrawal_balance * 0.04
+st.markdown(f"**Estimated Annual TSP Income:** ${tsp_annual_income:,.2f}")
 
 # --- FEHB & FEGLI Selection ---
 fehb_plan = st.selectbox("FEHB Plan Type", ["None", "Self Only", "Self + One", "Family"])
@@ -112,6 +154,13 @@ else:
     selected_monthly_income = monthly_regular
     pension_label = "Regular FERS Retirement"
 
+# --- Pension Calculation Breakdown ---
+with st.expander("🔎 Pension Calculation Breakdown"):
+    st.markdown("**Regular FERS Pension Calculation:**")
+    st.markdown(f"High-3 Salary * 1% * Years of Service * 0.9 = {high3_salary} * 0.01 * {years_service} * 0.9 = ${fers_regular:,.2f}")
+    st.markdown("**Disability FERS Pension Calculation:**")
+    st.markdown(f"High-3 Salary * (0.6 if under 62 else 0.4) = {high3_salary} * (0.6 if {current_age} < 62 else 0.4) = ${fers_disability:,.2f}")
+
 # --- What-if Comparison ---
 st.markdown("### 🧮 What-if Comparison: Disability vs. Regular Retirement")
 comparison_data = {
@@ -161,7 +210,85 @@ total_expenses = (fehb_premium + fegli_premium + monthly_expenses) * 12
 net_cash = total_preretirement_income - total_expenses
 st.markdown("### 💰 Net Cash After Expenses")
 st.info(f"**Annual Expenses (FEHB + FEGLI + Living):** ${total_expenses:,.2f}")
-st.success(f"**Net Cash Flow:** ${net_cash:,.2f}")
+if net_cash >= 0:
+    st.success(f"**Net Cash Flow:** ${net_cash:,.2f}")
+else:
+    st.error(f"**Net Cash Flow:** ${net_cash:,.2f}")
+
+# --- Sensitivity Analysis: Net Cash Flow vs. Years of Service ---
+with st.expander("🔍 Sensitivity Analysis: Net Cash Flow vs. Years of Service"):
+    years_range = list(range(0, 51))
+    net_cash_sensitivity = []
+    for y in years_range:
+        pension_value = high3_salary * 0.01 * y * 0.9
+        total_income = vsip_amount + pension_value
+        total_exp = (fehb_premium + fegli_premium + monthly_expenses) * 12
+        net_cash_sensitivity.append(total_income - total_exp)
+    fig, ax = plt.subplots()
+    ax.plot(years_range, net_cash_sensitivity, marker='o')
+    ax.set_title("Net Cash Flow vs. Years of Service")
+    ax.set_xlabel("Years of Federal Service")
+    ax.set_ylabel("Net Cash Flow ($)")
+    st.pyplot(fig)
+
+# --- Cash Flow Projection Over Time ---
+with st.expander("🔍 Cash Flow Projection Over Time"):
+    projection_years = list(range(0, 21))
+    growth_rate = 0.02
+    projected_cash_flows = [net_cash * ((1 + growth_rate) ** i) for i in projection_years]
+    fig2, ax2 = plt.subplots()
+    ax2.plot(projection_years, projected_cash_flows, marker='o', color='blue')
+    ax2.set_title("Projected Net Cash Flow Over 20 Years")
+    ax2.set_xlabel("Years After Retirement")
+    ax2.set_ylabel("Projected Net Cash Flow ($)")
+    st.pyplot(fig2)
+
+# --- Export Detailed Calculation Data as CSV ---
+with st.expander("📤 Export Detailed Calculation Data"):
+    data = {
+         "Metric": [
+             "Current Age",
+             "Years of Service",
+             "High-3 Salary",
+             "TSP Balance",
+             "TSP Contribution Rate",
+             "Regular FERS Pension",
+             "Disability FERS Pension",
+             "Selected FERS Income",
+             "Special Retirement Supplement (SRS)",
+             "Annual VA Disability",
+             "VSIP Lump Sum",
+             "Total Pre-Retirement Income",
+             "Annual Expenses",
+             "Net Cash Flow",
+             "Accessible TSP Balance",
+             "Estimated Annual TSP Income"
+         ],
+         "Value": [
+             current_age,
+             years_service,
+             high3_salary,
+             tsp_balance,
+             tsp_contribution_pct,
+             fers_regular,
+             fers_disability,
+             selected_fers_income,
+             srs_annual,
+             va_monthly * 12,
+             vsip_amount,
+             total_preretirement_income,
+             total_expenses,
+             net_cash,
+             tsp_withdrawal_balance,
+             tsp_annual_income
+         ]
+    }
+    export_df = pd.DataFrame(data)
+    csv = export_df.to_csv(index=False).encode('utf-8')
+    st.download_button("Download Detailed Data as CSV",
+                       data=csv,
+                       file_name="detailed_calculation_data.csv",
+                       mime="text/csv")
 
 # --- PDF Retirement Report Generator ---
 st.markdown("### 🖨️ Download Your Personalized Retirement Report")
@@ -174,7 +301,7 @@ p.setFont("Helvetica-Bold", 16)
 p.drawString(50, 750, "Simforia Retirement Summary Report")
 p.line(50, 747, 550, 747)
 
-# User data
+# User Data Section
 p.setFont("Helvetica", 12)
 y = 720
 user_info = [
@@ -193,6 +320,23 @@ for item in user_info:
     p.drawString(50, y, item)
     y -= 20
 
+# TSP Withdrawal Details Section
+y -= 10
+p.setFont("Helvetica-Bold", 12)
+p.drawString(50, y, "TSP Withdrawal Details:")
+p.setFont("Helvetica", 12)
+y -= 20
+tsp_details = [
+    f"TSP Withdrawal Option: {tsp_option}",
+    f"Penalty Note: {penalty_note}",
+    f"Accessible TSP Balance: ${tsp_withdrawal_balance:,.2f}",
+    f"Estimated Annual TSP Income: ${tsp_annual_income:,.2f}"
+]
+for detail in tsp_details:
+    p.drawString(50, y, detail)
+    y -= 20
+
+# Income Summary Section
 y -= 10
 p.setFont("Helvetica-Bold", 12)
 p.drawString(50, y, "Income Summary:")
@@ -210,6 +354,7 @@ if va_monthly > 0:
     p.drawString(50, y, f"- Annual VA Disability: ${va_monthly * 12:,.2f}")
     y -= 30
 
+# Totals Section
 p.setFont("Helvetica-Bold", 12)
 p.drawString(50, y, f"📊 Total Pre-Retirement Income: ${total_preretirement_income:,.2f}")
 y -= 20
@@ -222,7 +367,7 @@ buffer.seek(0)
 st.download_button(
     label="📄 Download PDF Retirement Report",
     data=buffer,
-    file_name="Simforia_Retirement_Report.pdf",
+    file_name="Retirement_Report.pdf",
     mime="application/pdf"
 )
 
@@ -241,3 +386,5 @@ st.markdown("""
 ---
 <small><strong>Disclaimer:</strong> This simulation tool is provided strictly for educational and informational purposes. It does not constitute official retirement guidance, legal counsel, financial advice, or tax planning. This tool is not affiliated with, endorsed by, or authorized by the Office of Personnel Management (OPM), the Department of Defense (DoD), or any federal agency. All estimates are based on simplified assumptions and publicly available retirement formulas and should not be used for final decision-making. Individual circumstances, benefit eligibility, agency-specific policies, and future changes to law or policy may significantly alter results. Before acting on any output from this tool, you are strongly advised to consult your Human Resources office, a certified financial planner, tax professional, and/or retirement counselor. Use of this app constitutes acknowledgment that Simforia Intelligence Group assumes no liability for outcomes or decisions made from its use.</small>
 """, unsafe_allow_html=True)
+
+
