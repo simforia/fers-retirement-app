@@ -693,6 +693,23 @@ st.download_button(
     mime="application/pdf"
 )
 
+# --- TSP Advisor GPT Button ---
+st.markdown("### TSP Advisor GPT Link")
+
+# A short descriptive blurb
+st.info("""
+Welcome to your tactical TSP optimization assistant. 
+Get strategic, data-backed investment advice designed for retirement-focused federal employees. 
+Powered by real-world economic insight and military-grade planning discipline.
+""")
+
+advisor_url = "https://chatgpt.com/g/g-67eea2244d2c819189bee5201afec0bc-tsp-advisor-by-simforia-intelligence-group"
+
+# Create a button that, when clicked, opens the link in a new tab/window
+if st.button("Open TSP Advisor GPT in new tab"):
+    js_code = f"window.open('{advisor_url}')"
+    st.components.v1.html(f"<script>{js_code}</script>", height=0)
+
 # --- Footer ---
 st.markdown("---")
 st.markdown("**Contact Simforia Intelligence Group**")
