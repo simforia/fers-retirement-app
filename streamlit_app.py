@@ -142,57 +142,18 @@ survivor_elected = st.checkbox("Elect Survivor Benefit (Reduced Pension for Spou
 survivor_pct = st.slider("Survivor Benefit Percentage of Base Pension", 0.0, 1.0, 0.5, step=0.05)
 survivor_cost_pct = st.slider("Monthly Reduction to Cover Survivor Option (%)", 0.0, 0.2, 0.10, step=0.01)
 
+# --- Temporary initialization to prevent NameError ---
+selected_fers_income = 0.0
+
 if survivor_elected:
     selected_fers_income *= (1 - survivor_cost_pct)
     survivor_income = selected_fers_income * survivor_pct
     st.markdown(f"**Adjusted Pension (with Survivor Reduction):** ${selected_fers_income:,.2f}")
     st.markdown(f"**Future Survivor Income (if elected):** ${survivor_income:,.2f} annually")
 
-# Apply tax withholding to relevant fields
-selected_fers_income = apply_tax_withholding(selected_fers_income)
-tsp_annual_income = tsp_tax_behavior(tsp_annual_income)
-va_annual = va_monthly * 12
-va_annual = apply_tax_withholding(va_annual)
-srs_annual = apply_tax_withholding(srs_annual)
-
-# Recalculate total income with tax effect
-income_values = [vsip_amount]
-if disability_retirement:
-    income_values.append(selected_fers_income)
-else:
-    income_values.append(selected_fers_income)
-    if srs_annual > 0:
-        income_values.append(srs_annual)
-if va_monthly > 0:
-    income_values.append(va_annual)
-
-income_values.append(tsp_annual_income)
-
-total_preretirement_income = sum(income_values)
-total_expenses = (fegli_premium + fehb_premium + monthly_expenses) * 12
-net_cash = total_preretirement_income - total_expenses
-
-# --- Post-Tax Monthly Breakdown ---
-st.markdown("### 💸 Monthly Post-Tax Income Breakdown")
-monthly_post_tax = total_preretirement_income / 12
-monthly_expense_total = total_expenses / 12
-monthly_surplus = monthly_post_tax - monthly_expense_total
-
-breakdown_df = pd.DataFrame({
-    "Metric": ["Post-Tax Monthly Income", "Monthly Expenses", "Monthly Surplus"],
-    "Amount ($)": [monthly_post_tax, monthly_expense_total, monthly_surplus],
-})
-st.dataframe(breakdown_df.style.format({"Amount ($)": "${:,.2f}"}), use_container_width=True)
-
-fig, ax = plt.subplots()
-ax.pie([monthly_post_tax, monthly_expense_total, monthly_surplus], 
-       labels=["Income", "Expenses", "Surplus"], 
-       autopct='%1.1f%%', startangle=90)
-ax.axis('equal')
-st.pyplot(fig)
-
 # --- Continue with existing logic ---
 # (Remaining code continues unchanged from here)
+
 
 
 # --- Continue with existing logic ---
