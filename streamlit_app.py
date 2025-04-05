@@ -3,8 +3,12 @@ import streamlit as st
 from datetime import datetime
 import matplotlib.pyplot as plt
 import pandas as pd
+import urllib.parse
+import io
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 
-# --- Setup ---
+# --- Setup & Session State ---
 st.session_state.setdefault("visits", 0)
 st.session_state.visits += 1
 
@@ -16,11 +20,12 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+# --- Header ---
 st.markdown("""
 <div style="text-align: center;">
     <h2 style="margin-bottom: 0;">Simforia Intelligence Group</h2>
     <p style='font-size: 18px; margin-top: 0;'><em>Retirement Optimization Toolkit – DRP / VERA / TSP Strategy Suite</em></p>
-    <small><strong>Important Notice: For Informational Purposes Only</strong><br>
+    <small><strong>Important Notice: For Informational Purposes Only</strong><br></small>
 </div>
 """, unsafe_allow_html=True)
 
@@ -109,7 +114,6 @@ else:
 
 # --- What-if Comparison ---
 st.markdown("### 🧮 What-if Comparison: Disability vs. Regular Retirement")
-
 comparison_data = {
     "Scenario": ["Regular FERS Retirement", "Disability Retirement"],
     "Annual Pension ($)": [fers_regular, fers_disability],
@@ -127,13 +131,10 @@ comp_df = comp_df.style.format({
 })
 st.dataframe(comp_df, use_container_width=True)
 
-# --- Financial Summary (Corrected Totals) ---
+# --- Financial Summary ---
 st.markdown("### 📋 Total Pre-Retirement Income Summary")
-
-# Build the income types and values based on scenario
 income_labels = ["VSIP Lump Sum"]
 income_values = [vsip_amount]
-
 if disability_retirement:
     income_labels.append("Annual FERS Pension (Disability Retirement)")
     income_values.append(fers_disability)
@@ -143,49 +144,33 @@ else:
     if srs_annual > 0:
         income_labels.append("Special Retirement Supplement (SRS)")
         income_values.append(srs_annual)
-
-# Always add VA Disability if present
 if va_monthly > 0:
     income_labels.append("Annual VA Disability")
     income_values.append(va_monthly * 12)
-
-# Build the DataFrame
 summary_data = {
     "Income Type": income_labels,
     "Amount ($)": income_values
 }
 summary_df = pd.DataFrame(summary_data)
-
 total_preretirement_income = sum(income_values)
-
 st.dataframe(summary_df.style.format({"Amount ($)": "${:,.2f}"}), use_container_width=True)
 st.success(f"**Combined Pre-Retirement Income:** ${total_preretirement_income:,.2f}")
-
 
 # --- Net Cash After Expenses ---
 total_expenses = (fehb_premium + fegli_premium + monthly_expenses) * 12
 net_cash = total_preretirement_income - total_expenses
-
 st.markdown("### 💰 Net Cash After Expenses")
 st.info(f"**Annual Expenses (FEHB + FEGLI + Living):** ${total_expenses:,.2f}")
 st.success(f"**Net Cash Flow:** ${net_cash:,.2f}")
+
 # --- PDF Retirement Report Generator ---
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
-import io
-
 st.markdown("### 🖨️ Download Your Personalized Retirement Report")
-
 buffer = io.BytesIO()
 p = canvas.Canvas(buffer, pagesize=letter)
 width, height = letter
-
-# Header
 p.setFont("Helvetica-Bold", 16)
 p.drawString(50, 750, "Simforia Retirement Summary Report")
 p.line(50, 747, 550, 747)
-
-# User data
 p.setFont("Helvetica", 12)
 y = 720
 user_info = [
@@ -200,12 +185,9 @@ user_info = [
     f"VA Disability: ${va_monthly}/mo",
     f"Pension Type: {pension_label}"
 ]
-
 for item in user_info:
     p.drawString(50, y, item)
     y -= 20
-
-# Income section
 y -= 10
 p.setFont("Helvetica-Bold", 12)
 p.drawString(50, y, "Income Summary:")
@@ -225,8 +207,6 @@ if not disability_retirement and srs_annual > 0:
 if va_monthly > 0:
     p.drawString(50, y, f"- Annual VA Disability: ${va_monthly * 12:,.2f}")
     y -= 30
-
-# Totals
 p.setFont("Helvetica-Bold", 12)
 p.drawString(50, y, f"📊 Total Pre-Retirement Income: ${total_preretirement_income:,.2f}")
 y -= 20
@@ -234,8 +214,6 @@ p.drawString(50, y, f"🧾 Annual Expenses: ${total_expenses:,.2f}")
 y -= 20
 p.drawString(50, y, f"💰 Net Cash Flow: ${net_cash:,.2f}")
 p.save()
-
-# Streamlit download button
 buffer.seek(0)
 st.download_button(
     label="📄 Download PDF Retirement Report",
@@ -243,10 +221,6 @@ st.download_button(
     file_name="Simforia_Retirement_Report.pdf",
     mime="application/pdf"
 )
-
-# --- GPT Tool Link ---
-st.markdown("### 💬 Need Personalized TSP or Retirement Strategy Help?")
-st.markdown("[🧠 Ask Simforia’s TSP Advisor GPT — Smart Projections, Risk Modeling, and Tax-Aware Retirement Analysis](https://chat.openai.com/g/g-67eea2244d2c819189bee5201afec0bc-tsp-advisor-by-simforia-intellegence-group)")
 
 # --- Footer ---
 st.markdown("---")
@@ -263,5 +237,3 @@ st.markdown("""
 ---
 <small><strong>Disclaimer:</strong> This simulation tool is provided strictly for educational and informational purposes. It does not constitute official retirement guidance, legal counsel, financial advice, or tax planning. This tool is not affiliated with, endorsed by, or authorized by the Office of Personnel Management (OPM), the Department of Defense (DoD), or any federal agency. All estimates are based on simplified assumptions and publicly available retirement formulas and should not be used for final decision-making. Individual circumstances, benefit eligibility, agency-specific policies, and future changes to law or policy may significantly alter results. Before acting on any output from this tool, you are strongly advised to consult your Human Resources office, a certified financial planner, tax professional, and/or retirement counselor. Use of this app constitutes acknowledgment that Simforia Intelligence Group assumes no liability for outcomes or decisions made from its use.</small>
 """, unsafe_allow_html=True)
-
-
