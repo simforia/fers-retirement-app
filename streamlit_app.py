@@ -4,12 +4,8 @@ from datetime import datetime
 import urllib.parse
 import openai
 import io
-import matplotlib.pyplot as plt
-import pandas as pd
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
-from reportlab.lib.utils import ImageReader
-import tempfile
 import requests
 
 # Optional: Replace with your own OpenAI key if needed
@@ -21,15 +17,17 @@ def get_gpt_response(prompt):
         response = openai.ChatCompletion.create(
             model="gpt-4",
             messages=[{"role": "user", "content": prompt}],
-            max_tokens=1000,
+            max_tokens=1500,
             temperature=0.7,
         )
         return response.choices[0].message.content
     except Exception as e:
         return f"Error fetching GPT response: {e}"
 
-# --- FERS Strategy Wizard UI ---
+# --- Title ---
 st.title("🧠 Simforia Prompt Wizards + GPT Strategy Tools")
+
+# --- FERS Strategy Wizard ---
 st.markdown("## 🧓 FERS Strategy Wizard")
 
 with st.expander("📋 Build Your FERS Retirement GPT Prompt"):
@@ -74,48 +72,7 @@ Provide charts, analysis, and a strategic recommendation.
         st.markdown("#### ✅ GPT Response:")
         st.write(response)
 
-# --- Contractor Strategy Wizard ---
-st.markdown("## 🛠️ Contractor Launch Strategy Wizard")
-with st.expander("🚀 Build a 1099 Transition Plan"):
-    contractor_skill = st.text_input("What service will you offer as a contractor?", "federal compliance consulting")
-    contractor_rate = st.number_input("Target Hourly Rate ($)", min_value=25, max_value=500, value=120)
-    contractor_hours = st.number_input("Hours Per Week You Plan to Work", min_value=1, max_value=60, value=25)
-    contractor_costs = st.number_input("Estimated Monthly Business Expenses ($)", min_value=0, value=1500)
-
-    contractor_prompt = f"""
-Help me evaluate a federal contractor launch strategy as a post-retirement path.
-
-- Contractor Role: {contractor_skill}  
-- Hourly Rate: ${contractor_rate}  
-- Hours Per Week: {contractor_hours}  
-- Monthly Overhead Costs: ${contractor_costs}
-
-Estimate monthly profit, annual income, tax considerations, and how this compares to taking a regular retirement. Suggest basic startup steps and breakeven analysis.
-"""
-
-    st.text_area("💼 GPT Contractor Prompt", contractor_prompt, height=250)
-    encoded_contractor_prompt = urllib.parse.quote(contractor_prompt)
-    st.markdown(f"💬 [Launch Contractor Prompt in GPT](https://chat.openai.com/?prompt={encoded_contractor_prompt})")
-
-    if st.button("💡 Run Contractor Strategy GPT Now"):
-        result = get_gpt_response(contractor_prompt)
-        st.markdown("#### ✅ GPT Strategy Output:")
-        st.write(result)
-
-# --- Job Explorer Helper ---
-def fetch_remoteok_jobs(query):
-    try:
-        url = f"https://remoteok.com/api"
-        response = requests.get(url, headers={"User-Agent": "Mozilla/5.0"})
-        data = response.json()
-        results = [job for job in data if query.lower() in job.get("position", "").lower() or query.lower() in job.get("tags", [])]
-        return results[:5]
-    except Exception as e:
-        return [{"position": f"Error fetching jobs: {e}", "company": "N/A", "location": "N/A", "url": ""}]
-
-# --- Job Market Explorer ---
-
-# --- Extended Job Filters ---
+# --- Live Job Market Section ---
 st.markdown("## 📈 Job Market Trends for Retirees")
 with st.expander("🔍 Explore Current In-Demand Roles"):
     st.info("Live job data is powered by previewed API responses. Real-time API integrations with JobsPikr, BLS, or ZipRecruiter available.")
@@ -154,22 +111,8 @@ with st.expander("🔍 Explore Current In-Demand Roles"):
     job_data = job_map.get(skill, [])
 
     for job in job_data:
-        st.markdown(f"**{job['title']}**
-📍 {job['location']}  💵 {job['salary']}")
+        st.markdown(f"**{job['title']}**\n📍 {job['location']}  \
+💵 {job['salary']}")
 
     st.caption("Real-time listings via live APIs coming soon. Want to sponsor deeper integrations? Contact Simforia Labs.")
 
-st.markdown("## 🌐 Post-Retirement Job Market Explorer")
-st.markdown("Explore live remote job listings tailored to your skills and transition goals.")
-
-with st.expander("🔍 Search for Remote Job Roles by Keyword"):
-    query = st.text_input("Enter job title or keyword (e.g. cybersecurity, project manager)", "cybersecurity")
-    if query:
-        jobs = fetch_remoteok_jobs(query)
-        for job in jobs:
-            st.markdown(f"**{job.get('position', 'Unknown')}** at **{job.get('company', 'Unknown')}**")
-            st.markdown(f"📍 Location: {job.get('location', 'Remote')}")
-            st.markdown(f"🔗 [Apply Now]({job.get('url', '#')})")
-            st.markdown("---")
-
-st.caption("Job data powered by RemoteOK. Contact Simforia for premium data feeds or regional filters.")
