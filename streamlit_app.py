@@ -198,20 +198,8 @@ p.setFont("Helvetica-Bold", 12)
 p.drawString(50, y, "Income Summary:")
 p.setFont("Helvetica", 12)
 y -= 20
-
 if vsip_amount > 0:
     p.drawString(50, y, f"- VSIP Lump Sum: ${vsip_amount:,.2f}")
-    y -= 20
-y -= 10
-p.setFont("Helvetica-Bold", 12)
-p.drawString(50, y, "Income Summary:")
-p.setFont("Helvetica", 12)
-y -= 20
-if vsip_amount > 0:
-    p.drawString(50, y, f"- VSIP Lump Sum: ${vsip_amount:,.2f}")
-    y -= 20
-if total_admin_leave_income > 0:
-    p.drawString(50, y, f"- Admin Leave Income: ${total_admin_leave_income:,.2f}")
     y -= 20
 p.drawString(50, y, f"- FERS Pension: ${selected_fers_income:,.2f}")
 y -= 20
@@ -221,12 +209,14 @@ if not disability_retirement and srs_annual > 0:
 if va_monthly > 0:
     p.drawString(50, y, f"- Annual VA Disability: ${va_monthly * 12:,.2f}")
     y -= 30
+
 p.setFont("Helvetica-Bold", 12)
 p.drawString(50, y, f"📊 Total Pre-Retirement Income: ${total_preretirement_income:,.2f}")
 y -= 20
 p.drawString(50, y, f"🧾 Annual Expenses: ${total_expenses:,.2f}")
 y -= 20
 p.drawString(50, y, f"💰 Net Cash Flow: ${net_cash:,.2f}")
+
 p.save()
 buffer.seek(0)
 st.download_button(
