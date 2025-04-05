@@ -54,16 +54,16 @@ with st.expander("❓ FAQ / Help"):
         """
     **SEPP (Substantially Equal Periodic Payments):**  
     A method to withdraw from your retirement savings without incurring the 10% early withdrawal penalty if you retire before age 59½. Payments are fixed and continue for at least 5 years or until you reach 59½ (whichever is longer).
-    
+
     **Age 55 Rule:**  
     For federal employees retiring directly (like via VERA) at age 55 or older in the same calendar year, TSP withdrawals are penalty-free.
-    
+
     **Pension Calculations:**  
     - **Regular FERS Pension:** Calculated as High-3 Salary * 1% * Years of Service * 0.9  
     - **Disability FERS Pension:** Calculated as High-3 Salary * (0.6 if under 62, otherwise 0.4)
-    
+
     Adjust the inputs above to see how changes in your service years or salary impact your final pension.
-    
+
     See our GPT link at the bottom of the page for any complex questions.
     """
     )
@@ -105,7 +105,21 @@ st.info(penalty_note)
 # Assume a 4% annual withdrawal rate on the accessible TSP balance.
 tsp_annual_income = tsp_withdrawal_balance * 0.04
 st.markdown(f"**Estimated Annual TSP Income:** ${tsp_annual_income:,.2f}")
-
+if current_age < 55:
+    if tsp_option == "Withdraw now (penalty applies if under 55)":
+        tsp_withdrawal_balance = tsp_balance * 0.9  # 10% penalty applies
+        penalty_note = "A 10% penalty applies on withdrawal."
+    elif tsp_option == "Set up SEPP plan":
+        tsp_withdrawal_balance = tsp_balance
+        penalty_note = "No penalty applied via SEPP plan."
+    else:  # Delay withdrawal until 59½
+        tsp_withdrawal_balance = 0
+        penalty_note = "No withdrawal now. Funds remain untouched until 59½."
+else:
+    # For age 55 or older, withdrawal is penalty-free.
+    tsp_withdrawal_balance = tsp_balance
+    penalty_note = "Withdrawal is penalty-free."
+	
 # --- FEHB / CHAMPVA & FEGLI Selection ---
 st.markdown("### FEHB / CHAMPVA & FEGLI Selection")
 health_coverage_choice = st.radio(
@@ -128,23 +142,8 @@ elif health_coverage_choice == "CHAMPVA":
         """
     **CHAMPVA** (Civilian Health and Medical Program of the Department of Veterans Affairs)
     is a comprehensive health care benefits program in which the VA shares the cost of covered
-    health care services and supplies with eligible beneficiaries (e.g., spouse/child of a vet
-    rated permanently & totally disabled, or survivors of a vet who died from a service-related
-    disability).
-
-    For more information, see the official [CHAMPVA Program page](https://www.va.gov/COMMUNITYCARE/programs/dependents/champva/).
-    """
-    )
-    st.markdown("No additional monthly premium is assumed here for demonstration.")
-
-# FEGLI Option
-fegli_option = st.selectbox("FEGLI Option", ["None", "Basic", "Basic + Option A", "Basic + Option B"])
-fegli_costs = {"None": 0, "Basic": 50, "Basic + Option A": 70, "Basic + Option B": 90}
-fegli_premium = fegli_costs[fegli_option]
-
-# Other living expenses input
-monthly_expenses = st.number_input("Other Monthly Living Expenses ($)", min_value=0, value=3000)
-
+    health care services and supplies with eligible beneficiaries
+	
 # --- VA Disability ---
 st.markdown("### VA Disability Compensation")
 va_monthly = st.number_input("Monthly VA Disability Payment ($)", min_value=0, value=0)
@@ -156,7 +155,7 @@ disability_retirement = st.checkbox("Apply FERS Disability Retirement Calculatio
 # --- SRS Calculation ---
 srs = (years_service / 40) * (1800 * 12) if current_age < 62 and years_service >= 20 else 0
 srs_annual = srs if current_age < 62 else 0
-
+	
 # --- VERA / VSIP / DRP Options ---
 st.markdown("### Separation Incentives")
 vera_elected = st.checkbox("Elect Voluntary Early Retirement Authority (VERA)?")
@@ -176,10 +175,7 @@ if vsip_amount > 0:
 # --- DRP Admin Leave Simulation ---
 if drp_elected:
     st.markdown("### DRP Administrative Leave Simulation")
-    months_of_leave = st.slider("Months of Paid Leave Before Separation", 1, 5, 4)
-    monthly_salary = high3_salary / 12
-    total_admin_leave_income = months_of_leave * monthly_salary
-    st.write(f"**Estimated Admin Leave Income (Before Final Separation):** ${total_admin_leave_income:,.2f}")
+    months_of_leave = st.slider("Months of Paid Leave Before Separation", 1,
 
 # --- Pension Calculations ---
 fers_regular = high3_salary * 0.01 * years_service * 0.9
@@ -208,6 +204,7 @@ with st.expander("🔎 Pension Calculation Breakdown"):
     st.markdown(
         f"High-3 Salary * (0.6 if {current_age} < 62 else 0.4) = {high3_salary} * (0.6) = ${fers_disability:,.2f}"
     )
+
 
 # --- What-if Comparison ---
 st.markdown("### 🧮 What-if Comparison: Disability vs. Regular Retirement")
@@ -256,6 +253,7 @@ total_preretirement_income = sum(income_values)
 
 st.dataframe(summary_df.style.format({"Amount ($)": "${:,.2f}"}), use_container_width=True)
 st.success(f"**Combined Pre-Retirement Income:** ${total_preretirement_income:,.2f}")
+
 
 # --- Net Cash After Expenses ---
 total_expenses = (fegli_premium + fehb_premium + monthly_expenses) * 12
@@ -477,9 +475,7 @@ with st.expander("🔍 Cash Flow Projection Over Time"):
 st.markdown("### Retirement System Type")
 system_type = st.radio("Select Your Retirement System:", ("FERS", "CSRS"))
 
-##########################
-# Compare Retirement Income Over Different Ages (Normal vs. VERA / DRP)
-##########################
+# --- Compare Retirement Income Over Different Ages (VERA/DRP) ---
 with st.expander("📊 Compare Retirement Income Over Different Ages (VERA/DRP)"):
     st.markdown("""
     This section will estimate your approximate **annual retirement income** at each 
@@ -487,7 +483,7 @@ with st.expander("📊 Compare Retirement Income Over Different Ages (VERA/DRP)"
 
     - **Normal** (no VERA, no DRP)
     - **VERA** (if age ≥ 50 and you have enough service to qualify)
-    - **DRP** (adds an admin leave or lumpsum if DRP is elected)
+    - **DRP** (adds an admin leave or lump sum if DRP is elected)
 
     **Note:** This is a naive example. In production, refine the 
     logic to reflect TSP penalty rules, early retirement offsets, etc.
@@ -499,49 +495,35 @@ with st.expander("📊 Compare Retirement Income Over Different Ages (VERA/DRP)"
     if min_compare_age > max_compare_age:
         st.error("Error: Minimum age can't exceed maximum age.")
     else:
-        simulate_drp = drp_elected  # from earlier user checkbox
+        simulate_drp = drp_elected  # from earlier checkbox
         results = []
 
         def calc_retirement_income(age: int, base_service: float, with_vera=False, with_drp=False) -> float:
-            # 1) Hypothetical service
+            # 1) Hypothetical service increases with age beyond current_age
             hypothetical_service = base_service + max(0, age - current_age)
             if hypothetical_service < 0:
                 hypothetical_service = 0
 
-            # 2) Basic pension formula (just reusing FERS logic for demonstration)
+            # 2) Basic pension formula (using FERS logic for demonstration)
             pension = high3_salary * 0.01 * hypothetical_service * 0.9
-            # If user is using CSRS, do a rougher approach
+            # If using CSRS, apply a different rate (e.g., 1.85% per year)
             if system_type == "CSRS":
-                # For demonstration only: 1.85% of High-3 per year of service
                 pension = high3_salary * 0.0185 * hypothetical_service
 
-            # 3) SRS (FERS only, if <62 & service>=20)
+            # 3) SRS (only for FERS, if age < 62 & service >= 20)
             srs_amt = 0
             if system_type == "FERS" and age < 62 and hypothetical_service >= 20:
-                # reusing srs_annual
                 srs_amt = srs_annual
 
-            # 4) TSP approximate
+            # 4) TSP approximate, with early penalty if age < 55 unless with_vera
             hypothetical_tsp = tsp_balance * 0.04
-            # early penalty if < 55 unless with_vera
             if age < 55 and not with_vera:
-                hypothetical_tsp *= 0.90  # naive approach
+                hypothetical_tsp *= 0.90  # penalty reduction
 
-            # 5) If with_vera, check if truly eligible
-            # e.g. age>=50 & service>=20 or service>=25
-            pension_reduction = 0
-            if with_vera:
-                if (age >= 50 and hypothetical_service >= 20) or hypothetical_service >= 25:
-                    # e.g. reduce 10% if < 55
-                    if age < 55:
-                        pension_reduction = 0.10
-                else:
-                    with_vera = False  # not truly eligible
-            pension *= (1 - pension_reduction)
-
+            # 5) If with_drp, add the DRP admin leave income
             lumpsum_drp = 0
             if with_drp:
-                lumpsum_drp = total_admin_leave_income  # from DRP slider
+                lumpsum_drp = total_admin_leave_income
 
             total_annual = pension + srs_amt + hypothetical_tsp + lumpsum_drp + (va_monthly * 12)
             return total_annual
@@ -568,7 +550,6 @@ with st.expander("📊 Compare Retirement Income Over Different Ages (VERA/DRP)"
         ax.plot(df_compare["Age"], df_compare["VERA"], label="VERA", marker="s", linestyle="--")
         if simulate_drp:
             ax.plot(df_compare["Age"], df_compare["DRP"], label="DRP", marker="^", linestyle=":")
-
         ax.set_xlabel("Retirement Age")
         ax.set_ylabel("Approx. Annual Income ($)")
         ax.set_title(f"Retirement Income vs Age: {system_type} Normal / VERA / DRP")
@@ -627,7 +608,6 @@ p.setFont("Helvetica-Bold", 12)
 p.drawString(50, y, "Income Summary:")
 p.setFont("Helvetica", 12)
 y -= 20
-
 if vsip_amount > 0:
     p.drawString(50, y, f"- VSIP Lump Sum: ${vsip_amount:,.2f}")
     y -= 20
@@ -649,11 +629,7 @@ y -= 20
 p.drawString(50, y, f"💰 Net Cash Flow: ${net_cash:,.2f}")
 y -= 30
 
-# Optional: horizontal line to separate totals from contractor
-# p.line(50, y, 550, y)
-# y -= 10
-
-# --- New Contractor Section ---
+# Contractor Section
 p.setFont("Helvetica-Bold", 12)
 p.drawString(50, y, "Contractor Income Analysis")
 y -= 20
@@ -706,12 +682,10 @@ Powered by real-world economic insight and military-grade planning discipline.
 """)
 
 advisor_url = "https://chatgpt.com/g/g-67eea2244d2c819189bee5201afec0bc-tsp-advisor-by-simforia-intelligence-group"
-
 st.markdown(f"[**➡️ Click here to open TSP Advisor GPT**]({advisor_url})")
-
 st.markdown("""
 _If the link does not open automatically in a new tab, 
-right-click and select "Open Link in New Tab."_ 
+right-click and select "Open Link in New Tab."_
 """)
 
 # --- Footer ---
@@ -735,3 +709,5 @@ st.markdown(
 """,
     unsafe_allow_html=True
 )
+
+
