@@ -168,9 +168,13 @@ st.markdown("### 🖨️ Download Your Personalized Retirement Report")
 buffer = io.BytesIO()
 p = canvas.Canvas(buffer, pagesize=letter)
 width, height = letter
+
+# Header
 p.setFont("Helvetica-Bold", 16)
 p.drawString(50, 750, "Simforia Retirement Summary Report")
 p.line(50, 747, 550, 747)
+
+# User data
 p.setFont("Helvetica", 12)
 y = 720
 user_info = [
@@ -187,6 +191,16 @@ user_info = [
 ]
 for item in user_info:
     p.drawString(50, y, item)
+    y -= 20
+
+y -= 10
+p.setFont("Helvetica-Bold", 12)
+p.drawString(50, y, "Income Summary:")
+p.setFont("Helvetica", 12)
+y -= 20
+
+if vsip_amount > 0:
+    p.drawString(50, y, f"- VSIP Lump Sum: ${vsip_amount:,.2f}")
     y -= 20
 y -= 10
 p.setFont("Helvetica-Bold", 12)
