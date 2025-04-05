@@ -35,76 +35,71 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# --- Tax Awareness Toggle ---
-with st.expander("⚖️ Tax Withholding Simulation"):
-    apply_tax = st.checkbox("Apply Estimated Federal Tax Withholding?", value=False)
-    tax_rate = st.slider("Estimated Tax Rate (%)", min_value=0, max_value=40, value=15)
+# --- Instructions ---
+with st.expander("ℹ️ How to Use This Tool"):
+    st.markdown(
+        """
+    1. Enter your current age and total federal service.
+    2. Input your TSP balance, high-3 salary, and contribution rate.
+    3. Select your FEHB/CHAMPVA and FEGLI retirement coverage.
+    4. View projected growth, income, and milestone ages.
+    5. Compare monthly income streams.
+    6. Visualize projected net worth including VA, TSP, FERS, SRS, FEHB, and DRP.
+    """
+    )
 
-# --- Export Comparison Table CSV ---
-if "df_compare" in locals():
-    with st.expander("📤 Export Retirement Income Comparison Table"):
-        csv_compare = df_compare.to_csv(index=False).encode("utf-8")
-        st.download_button(
-            "Download Income Comparison as CSV",
-            data=csv_compare,
-            file_name="retirement_income_comparison.csv",
-            mime="text/csv",
-        )
+# --- FAQ / Help Section ---
+with st.expander("❓ FAQ / Help"):
+    st.markdown(
+        """
+    **SEPP (Substantially Equal Periodic Payments):**  
+    A method to withdraw from your retirement savings without incurring the 10% early withdrawal penalty if you retire before age 59½. Payments are fixed and continue for at least 5 years or until you reach 59½ (whichever is longer).
+    
+    **Age 55 Rule:**  
+    For federal employees retiring directly (like via VERA) at age 55 or older in the same calendar year, TSP withdrawals are penalty-free.
+    
+    **Pension Calculations:**  
+    - **Regular FERS Pension:** Calculated as High-3 Salary * 1% * Years of Service * 0.9  
+    - **Disability FERS Pension:** Calculated as High-3 Salary * (0.6 if under 62, otherwise 0.4)
+    
+    Adjust the inputs above to see how changes in your service years or salary impact your final pension.
+    """
+    )
 
-        pdf_buffer = io.BytesIO()
-        p = canvas.Canvas(pdf_buffer, pagesize=letter)
-        width, height = letter
-        y = height - 50
-        p.setFont("Helvetica-Bold", 14)
-        p.drawString(50, y, "Retirement Income Comparison by Age")
-        y -= 30
-        p.setFont("Helvetica", 10)
+# --- Inputs ---
+current_age = st.number_input("Current Age", min_value=18, max_value=80)
+years_service = st.number_input("Years of Federal Service", min_value=0, max_value=50)
+high3_salary = st.number_input("High-3 Average Salary ($)", min_value=0)
+tsp_balance = st.number_input("Current TSP Balance ($)", min_value=0)
+tsp_contribution_pct = st.slider("TSP Contribution (% of Salary)", 0, 100, 5)
+tsp_contribution_annual = high3_salary * (tsp_contribution_pct / 100)
 
-        for index, row in df_compare.iterrows():
-            p.drawString(50, y, f"Age: {row['Age']}, Normal: ${row['Normal']:,.2f}, VERA: ${row['VERA']:,.2f}, DRP: ${row['DRP']:,.2f}")
-            y -= 15
-            if y < 50:
-                p.showPage()
-                y = height - 50
-                p.setFont("Helvetica", 10)
-
-        p.save()
-        pdf_buffer.seek(0)
-        st.download_button(
-            label="Download Income Comparison as PDF",
-            data=pdf_buffer,
-            file_name="retirement_income_comparison.pdf",
-            mime="application/pdf"
-        )
-
-# --- Apply Tax Rate ---
-def apply_tax_withholding(amount):
-    return amount * (1 - (tax_rate / 100)) if apply_tax else amount
-
-# Apply tax withholding to relevant fields
-selected_fers_income = apply_tax_withholding(selected_fers_income)
-tsp_annual_income = apply_tax_withholding(tsp_annual_income)
-va_annual = va_monthly * 12
-va_annual = apply_tax_withholding(va_annual)
-srs_annual = apply_tax_withholding(srs_annual)
-
-# Recalculate total income with tax effect
-income_values = [vsip_amount]
-if disability_retirement:
-    income_values.append(selected_fers_income)
+# --- TSP Withdrawal Calculation (For VERA Retirement) ---
+st.markdown("### TSP Withdrawal Calculation (For VERA Retirement)")
+tsp_option = st.radio(
+    "Select TSP Withdrawal Option:",
+    (
+        "Withdraw now (penalty applies if under 55)",
+        "Delay withdrawal until 59½ (No withdrawal now)",
+        "Set up SEPP plan",
+    ),
+)
+if current_age < 55:
+    if tsp_option == "Withdraw now (penalty applies if under 55)":
+        tsp_withdrawal_balance = tsp_balance * 0.9  # 10% penalty applies
+        penalty_note = "A 10% penalty applies on withdrawal."
+    elif tsp_option == "Set up SEPP plan":
+        tsp_withdrawal_balance = tsp_balance
+        penalty_note = "No penalty applied via SEPP plan."
+    else:  # Delay withdrawal until 59½
+        tsp_withdrawal_balance = 0
+        penalty_note = "No withdrawal now. Funds remain untouched until 59½."
 else:
-    income_values.append(selected_fers_income)
-    if srs_annual > 0:
-        income_values.append(srs_annual)
-if va_monthly > 0:
-    income_values.append(va_annual)
+    # For age 55 or older, withdrawal is penalty-free.
+    tsp_withdrawal_balance = tsp_balance
+    penalty_note = "Withdrawal is penalty-free."
 
-total_preretirement_income = sum(income_values)
-net_cash = total_preretirement_income - ((fegli_premium + fehb_premium + monthly_expenses) * 12)
-
-# --- Continue with existing logic ---
-# (Remaining code continues unchanged from here)
-
+st.info(penalty_note)
 # Assume a 4% annual withdrawal rate on the accessible TSP balance.
 tsp_annual_income = tsp_withdrawal_balance * 0.04
 st.markdown(f"**Estimated Annual TSP Income:** ${tsp_annual_income:,.2f}")
@@ -474,226 +469,6 @@ with st.expander("🔍 Cash Flow Projection Over Time"):
     ax2.set_xlabel("Years After Retirement")
     ax2.set_ylabel("Projected Net Cash Flow ($)")
     st.pyplot(fig2)
-
-##########################
-# FERS vs CSRS Input
-##########################
-st.markdown("### Retirement System Type")
-system_type = st.radio("Select Your Retirement System:", ("FERS", "CSRS"))
-
-##########################
-# Compare Retirement Income Over Different Ages (Normal vs. VERA)
-##########################
-with st.expander("📊 Compare Retirement Income Over Different Ages (Normal vs. VERA)"):
-    st.markdown("""
-    This section estimates approximate annual retirement income at each retirement 
-    age between **50** and **62**, comparing **Normal** vs **VERA** retirement. 
-
-    **Note**: This is a simplified demo. In real usage, refine logic for TSP 
-    penalties, DRP, inflation, partial COLA, etc.
-    """)
-
-    # Define the range of ages
-    ages = list(range(50, 63))
-
-    # Lists to store results
-    normal_incomes = []
-    vera_incomes = []
-
-    # Hard-coded placeholders – adapt or fetch from user inputs
-    user_high3 = 100000       # hypothetical High-3 Salary
-    user_service = 25.0       # years of service
-    user_tsp = 300000         # TSP balance
-    user_va_annual = 12000    # VA disability
-
-    # SRS function (for FERS only)
-    def calc_srs(age, service):
-        # from earlier approach: (service / 40) * (1800 * 12)
-        if system_type == "FERS" and age < 62 and service >= 20:
-            return (service / 40) * (1800 * 12)
-        else:
-            return 0.0
-
-    for age in ages:
-        # Hypothetical service if user waits until 'age'
-        # (Replace with real logic if needed)
-        hypothetical_service = user_service + (age - 55) if age > 55 else user_service
-        if hypothetical_service < 0:
-            hypothetical_service = 0
-
-        ############################################
-        # Normal Retirement
-        ############################################
-        if system_type == "FERS":
-            # If age >= 62 & service >= 20 => 1.1% instead of 1.0%
-            if age >= 62 and hypothetical_service >= 20:
-                accrual = 0.011
-            else:
-                accrual = 0.01
-            pension = user_high3 * accrual * hypothetical_service * 0.9
-            srs_amt = calc_srs(age, hypothetical_service)
-        else:
-            # CSRS example: 1.85% * YOS * High-3 (very simplified)
-            accrual = 0.0185
-            pension = user_high3 * accrual * hypothetical_service
-            srs_amt = 0
-
-        # TSP annual draw (4% example)
-        tsp_draw = user_tsp * 0.04
-
-        normal_total = pension + srs_amt + tsp_draw + user_va_annual
-
-        ############################################
-        # VERA Retirement
-        ############################################
-        pension_vera = pension
-        # Example early penalty for VERA: if < 55 & service >= 20
-        if age < 55 and hypothetical_service >= 20:
-            yrs_early = 55 - age
-            penalty = yrs_early * 0.02
-            if penalty > 1.0:
-                penalty = 1.0
-            pension_vera *= (1 - penalty)
-
-        if system_type == "FERS":
-            srs_vera = calc_srs(age, hypothetical_service)
-        else:
-            srs_vera = 0
-
-        vera_total = pension_vera + srs_vera + tsp_draw + user_va_annual
-
-        normal_incomes.append(normal_total)
-        vera_incomes.append(vera_total)
-
-    # Build a DataFrame to display
-    df_compare = pd.DataFrame({
-        "Age": ages,
-        "Normal": normal_incomes,
-        "VERA": vera_incomes
-    })
-
-    st.dataframe(df_compare.style.format("{:,.0f}"))
-
-    # Plot
-    fig, ax = plt.subplots()
-    ax.plot(df_compare["Age"], df_compare["Normal"], label="Normal", marker="o")
-    ax.plot(df_compare["Age"], df_compare["VERA"], label="VERA", marker="o", linestyle="--")
-    ax.axvline(x=62, color="gray", linestyle="--", alpha=0.6)
-    ax.set_title(f"{system_type} Retirement Income: Normal vs. VERA")
-    ax.set_xlabel("Retirement Age")
-    ax.set_ylabel("Approx. Annual Income ($)")
-    ax.legend()
-    st.pyplot(fig)
-
-    st.markdown("Refine for accurate TSP penalty exceptions, DRP admin leave, inflation, etc.")
-
-
-	
-
-# --- Compare Retirement Income Over Different Ages (VERA/DRP) ---
-with st.expander("📊 Compare Retirement Income Over Different Ages (VERA/DRP)"):
-    st.markdown("""
-    This section will estimate your approximate **annual retirement income** at each 
-    retirement age in a user-selected range, for different scenarios:
-    
-    - **Normal** (no VERA, no DRP)
-    - **VERA** (if age ≥ 50 and you have enough service to qualify)
-    - **DRP** (adds an admin leave or lump sum if DRP is elected)
-    
-    **Note:** This is a naive illustration. In production, refine the 
-    calculations to reflect actual TSP penalty rules, 
-    early retirement reductions, and DRP admin leave details.
-    """)
-
-    min_compare_age = st.number_input("Minimum age to compare", min_value=40, max_value=80, value=50)
-    max_compare_age = st.number_input("Maximum age to compare", min_value=40, max_value=80, value=62)
-
-    if min_compare_age > max_compare_age:
-        st.error("Error: Minimum age can't exceed maximum age.")
-    else:
-        # We'll check if DRP is relevant from user input
-        simulate_drp = drp_elected
-
-        def calc_retirement_income(age: int, service: float, with_vera=False, with_drp=False) -> float:
-            """
-            Returns approximate annual retirement income 
-            (pension + TSP + SRS if applicable) for the given scenario.
-            
-            This is a naive example. You can refine or replace it with 
-            your actual early retirement logic, TSP penalty logic, etc.
-            """
-
-            # 1) Hypothetical service if the user works until 'age'
-            hypothetical_service = service + (age - current_age if age > current_age else 0)
-            if hypothetical_service < 0:
-                hypothetical_service = 0
-
-            # 2) Basic pension formula
-            hypothetical_pension = high3_salary * 0.01 * hypothetical_service * 0.9
-
-            # 3) SRS if <62 and >=20 yrs
-            hypothetical_srs = 0.0
-            if (age < 62) and (hypothetical_service >= 20):
-                hypothetical_srs = srs_annual
-
-            # 4) TSP approximate. If age < 55 => 10% penalty unless with_vera
-            hypothetical_tsp = tsp_balance * 0.04
-            if age < 55 and not with_vera:
-                hypothetical_tsp *= 0.90  # naive penalty approach
-
-            # 5) If with_vera => check eligibility
-            if with_vera:
-                # For demonstration: if (age>=50 & service>=20) or (service>=25) => apply VERA
-                if (age >= 50 and hypothetical_service >= 20) or (hypothetical_service >= 25):
-                    # Suppose we do a naive 2% penalty/year under 55 -> skip for brevity
-                    if age < 55:
-                        hypothetical_pension *= 0.90  # e.g. 10% reduction
-                    # TSP might be penalty-free with VERA
-                else:
-                    # If not truly eligible
-                    with_vera = False  # fallback to normal
-
-            # 6) DRP lumpsum
-            lumpsum_drp = 0.0
-            if with_drp:
-                lumpsum_drp = total_admin_leave_income  # from earlier DRP slider
-
-            total_annual = hypothetical_pension + hypothetical_srs + hypothetical_tsp + lumpsum_drp
-            return total_annual
-
-        results = []
-        for a in range(int(min_compare_age), int(max_compare_age) + 1):
-            normal_inc = calc_retirement_income(age=a, service=years_service, with_vera=False, with_drp=False)
-            vera_inc = calc_retirement_income(age=a, service=years_service, with_vera=True, with_drp=False)
-            drp_inc = 0.0
-            if simulate_drp:
-                drp_inc = calc_retirement_income(age=a, service=years_service, with_vera=False, with_drp=True)
-
-            results.append({
-                "Age": a,
-                "Normal": normal_inc,
-                "VERA": vera_inc,
-                "DRP": drp_inc,
-            })
-
-        df_compare = pd.DataFrame(results)
-        st.markdown("#### Retirement Income by Age & Scenario")
-        st.dataframe(df_compare.style.format("{:,.2f}"), use_container_width=True)
-
-        # Plot
-        st.markdown("_Naive calculations for demonstration; refine these for real logic._")
-
-        fig_compare, ax_compare = plt.subplots()
-        ax_compare.plot(df_compare["Age"], df_compare["Normal"], marker='o', label="Normal")
-        ax_compare.plot(df_compare["Age"], df_compare["VERA"], marker='o', label="VERA")
-        if simulate_drp:
-            ax_compare.plot(df_compare["Age"], df_compare["DRP"], marker='o', label="DRP")
-
-        ax_compare.set_xlabel("Retirement Age")
-        ax_compare.set_ylabel("Approx. Annual Income ($)")
-        ax_compare.set_title("Retirement Income vs. Age: Normal / VERA / DRP")
-        ax_compare.legend()
-        st.pyplot(fig_compare)
 
 # --- PDF Retirement Report Generator ---
 st.markdown("### 🖨️ Download Your Personalized Retirement Report")
