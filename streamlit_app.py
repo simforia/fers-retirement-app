@@ -482,9 +482,10 @@ local_wage = st.number_input(
 )
 expected_retirement_multiplier = st.slider(
     "Expected Retirement Wage Multiplier", 
-    min_value=1.0, max_value=2.0, value=1.5, step=0.1,
-    help="An estimated factor by which your retirement wage may differ from your current wage."
+    min_value=0.0, max_value=2.0, value=1.0, step=0.1,
+    help="A multiplier for estimating retirement wage vs. current wage. Set to 0 to simulate no post-retirement wage."
 )
+
 
 # Hypothetical formulas (adjust these as needed)
 estimated_retirement_wage = local_wage * expected_retirement_multiplier
