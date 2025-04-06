@@ -913,13 +913,18 @@ else:
     if system_type == "FERS" and age < 62 and hypothetical_service >= 20:
         srs_amt = srs_annual
 
-    # --- TSP Approximate ---
-    withdrawal_rate = 0.04
-    annual_growth_rate = 0.05
+   # --- TSP Approximate ---
+withdrawal_rate = 0.04
+annual_growth_rate = 0.05
+
+# If VERA, freeze TSP growth at separation; otherwise continue compounding
+if with_vera:
+    years_until_retirement = 0
+else:
     years_until_retirement = max(0, age - current_age)
 
-    projected_tsp_balance = tsp_balance * ((1 + annual_growth_rate) ** years_until_retirement)
-    estimated_tsp_withdrawal = projected_tsp_balance * withdrawal_rate
+projected_tsp_balance = tsp_balance * ((1 + annual_growth_rate) ** years_until_retirement)
+estimated_tsp_withdrawal = projected_tsp_balance * withdrawal_rate
 
     penalty_applies, _ = calculate_tsp_penalty_status(
     age,
