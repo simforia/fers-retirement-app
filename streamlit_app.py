@@ -1004,7 +1004,6 @@ def calc_retirement_income(age: int, base_service: float, with_vera=False, with_
     # Total
     total_annual = pension + srs_amt + hypothetical_tsp + lumpsum_drp + va_annual
     return total_annual
-
         srs_amt = srs_annual
 
     # --- TSP Approximate ---
