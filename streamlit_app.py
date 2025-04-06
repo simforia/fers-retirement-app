@@ -960,8 +960,7 @@ if with_drp and age >= separation_age:
 
     # Total annual income
     total_annual = pension + srs_amt + hypothetical_tsp + lumpsum_drp + va_annual
-    return total_annual
-
+ return total_annual
 
 # Now, generate the retirement income comparison data
 min_compare_age = st.number_input("Minimum age to compare", min_value=40, max_value=80, value=50)
