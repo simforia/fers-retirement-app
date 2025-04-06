@@ -896,15 +896,17 @@ def calc_retirement_income(age: int, base_service: float, with_vera=False, with_
     :param separation_age: The age at which DRP lump sum is applied.
     :return: The annual retirement income for the given scenario.
     """
+   # Determine hypothetical service based on scenario
+if with_vera:
+    hypothetical_service = base_service  # VERA = fixed service at separation
+else:
     hypothetical_service = base_service + max(0, age - current_age)
-    if hypothetical_service < 0:
-        hypothetical_service = 0
 
-    # Basic pension
-    if system_type == "CSRS":
-        pension = high3_salary * 0.0185 * hypothetical_service
-    else:
-        pension = high3_salary * 0.01 * hypothetical_service * 0.9
+# Basic pension
+if system_type == "CSRS":
+    pension = high3_salary * 0.0185 * hypothetical_service
+else:
+    pension = high3_salary * 0.01 * hypothetical_service * 0.9
 
     # SRS (FERS only if <62 & service >= 20)
     srs_amt = 0
