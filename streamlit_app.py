@@ -9,7 +9,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
 # --- Setup & Session State ---
-st.session_state.setdefault("visits", 1336)
+st.session_state.setdefault("visits", 1337)
 st.session_state.visits += 1
 
 st.markdown(
@@ -57,20 +57,22 @@ with st.expander("ℹ️ How to Use This Tool"):
 with st.expander("❓ FAQ / Help"):
     st.markdown(
         """
-    **SEPP (Substantially Equal Periodic Payments):**  
-    A method to withdraw from your retirement savings without incurring the 10% early withdrawal penalty if you retire before age 59½. Payments are fixed and continue for at least 5 years or until you reach 59½ (whichever is longer).
+**SEPP (Substantially Equal Periodic Payments):**  
+A method to withdraw from your retirement savings without incurring the 10% early withdrawal penalty if you retire before age 59½. Payments are fixed and continue for at least 5 years or until you reach 59½ (whichever is longer).
 
-    **Age 55 Rule:**  
-    For federal employees retiring directly (like via VERA) at age 55 or older in the same calendar year, TSP withdrawals are penalty-free.
+**Age 55 Rule:**  
+For federal employees retiring directly (like via VERA) at age 55 or older in the same calendar year, TSP withdrawals are penalty-free.
 
-    **Pension Calculations:**  
-    - **Regular FERS Pension:** Calculated as High-3 Salary * 1% * Years of Service * 0.9  
-    - **Disability FERS Pension:** Calculated as High-3 Salary * (0.6 if under 62, otherwise 0.4)
+**Pension Calculations:**  
+- **Regular FERS Pension:** Calculated as High-3 Salary * 1% * Years of Service * 0.9  
+- **Disability FERS Pension:** Calculated as High-3 Salary * (0.6 if under 62, otherwise 0.4)
 
-    Adjust the inputs above to see how changes in your service years or salary impact your final pension.
+Adjust the inputs above to see how changes in your service years or salary impact your final pension.
 
-    See our GPT link at the bottom of the page for any complex questions.
-    """
+See our GPT link at the bottom of the page for any complex questions.
+        """
+    )
+
     )
 
 # --- Inputs ---
@@ -126,6 +128,72 @@ tsp_option = st.radio(
     help="Choose 'Withdraw now' for immediate funds (subject to a 10% early withdrawal penalty and tax withholding if under 59½), 'Set up SEPP plan' to avoid the penalty (but taxes still apply), or 'Delay withdrawal' to defer until 59½."
 )
 
+# --- TSP Penalty and Tax Logic (Enhanced by Age, Service, VERA Eligibility) ---
+# --- VERA Eligibility Checkbox ---
+# --- Public Safety Employee Exception ---
+public_safety_employee = st.checkbox(
+    "I am a public safety employee (LEO, Firefighter, Air Traffic Controller)",
+    value=False,
+    help="Check if you are covered under special retirement provisions for public safety employees. TSP early withdrawal penalties may not apply if you separate at age 50 or later."
+)
+
+vera_elected = st.checkbox(
+    "I am retiring under a VERA (Voluntary Early Retirement Authority)",
+    value=False,
+    help="Check this if you are separating under the VERA program (typically 25+ years of service and at least age 50)."
+)
+
+def calculate_tsp_penalty_status(age, years_service, vera_elected, public_safety_employee):
+    if public_safety_employee and age >= 50:
+        return False, "No penalty – Public safety employee separated at or after age 50."
+
+    if age >= 62 and years_service >= 5:
+        return False, "No penalty – Age 62 or older at separation."
+    elif age >= 60 and years_service >= 20:
+        return False, "No penalty – Age 60+ with 20+ years of service."
+    elif age >= 55:
+        if vera_elected or years_service >= 30:
+            return False, "No penalty – Age 55 Rule applies (VERA or 30+ years)."
+        else:
+            return False, "No penalty – Age 55 Rule applies."
+    elif age >= 50 and vera_elected and years_service >= 25:
+        return True, "10% penalty – VERA retirement under age 55."
+    else:
+        return True, "10% penalty – Not retirement eligible under TSP rules."
+
+
+# Apply rule
+tsp_penalty_applies, penalty_note = calculate_tsp_penalty_status(
+    current_age, years_service, vera_elected, public_safety_employee
+)
+
+
+
+# --- TSP Withdrawal Rule Reference (Collapsible) ---
+with st.expander("📘 TSP Early Withdrawal Rules Explained"):
+    st.markdown("""
+### 🧮 **TSP Early Withdrawal Rule Summary Table**
+
+| **Age at Separation** | **Years of Service** | **Separation Type** | **Retirement Eligible?** | **10% TSP Penalty?** | **Notes** |
+|------------------------|----------------------|-----------------------|----------------------------|------------------------|-----------|
+| **62+**                | 5+                   | VERA or Non-VERA      | ✅ Full retirement         | ❌ No                  | Age 62 = no penalty regardless of type |
+| **60–61**              | 20+                  | VERA or Non-VERA      | ✅ Full retirement         | ❌ No                  | No penalty if age ≥ 55 at separation |
+| **55–59**              | 30+ or MRA+10        | VERA or Non-VERA      | ✅ Full or early retirement| ❌ No                  | Age 55 Rule applies |
+| **55–59**              | <30 (e.g., 25–29)    | VERA only             | ✅ Early (via VERA)        | ❌ No                  | Age 55 Rule still applies |
+| **50–54**              | 25+                  | ✅ VERA                | ✅ Early retirement        | ✅ Yes                 | Not age 55 → penalty unless exception used |
+| **<50**                | Any                  | VERA or Non-VERA      | ❌ Not eligible            | ✅ Yes                 | Ineligible for retirement under FERS |
+
+---
+
+### 🔁 **Key Logic Points**
+- **Age 55 at separation** is the penalty cutoff under standard FERS TSP rules.
+- **VERA eligibility does NOT automatically waive the TSP penalty** if you're under 55.
+- **Public safety employees (LEO, FF, ATC)** may be exempt starting at **age 50**, not reflected here.
+- Use this logic to decide whether to delay TSP withdrawals, set up SEPP, or take penalty-hit withdrawals.
+
+    """)
+
+
 # Slider for estimated federal tax rate on TSP distributions (as a percentage)
 tax_rate = st.slider(
     "Estimated Federal Income Tax Rate (%) for TSP Distribution",
@@ -143,32 +211,35 @@ withdrawal_rate = st.slider(
     help="Select the annual percentage of the accessible TSP balance you plan to withdraw."
 )
 
-if current_age < 59.5:  # Under age 59½ are subject to a penalty for early withdrawal.
+if current_age < 59.5:
     if tsp_option == "Withdraw now (penalty applies if under 59½)":
-        # Apply a 10% penalty on the full TSP balance.
-        base_balance = tsp_balance * 0.90  
-        # Then apply the tax withholding.
-        net_balance = base_balance * (1 - tax_rate)
+        if tsp_penalty_applies:
+            base_balance = tsp_balance * 0.90  # Apply 10% penalty
+            net_balance = base_balance * (1 - tax_rate)
+            penalty_note += " This scenario includes the 10% early withdrawal penalty."
+            st.warning("⚠️ You will incur a 10% early withdrawal penalty based on your current age and retirement type.")
+        else:
+            net_balance = tsp_balance * (1 - tax_rate)
+            penalty_note = "No penalty applies, only taxes withheld."
         tsp_withdrawal_balance = net_balance
-        penalty_note = f"A 10% penalty applies and an estimated {tax_rate*100:.0f}% tax is withheld on the withdrawal."
     elif tsp_option == "Set up SEPP plan":
-        # No penalty if using SEPP, but tax still applies.
         net_balance = tsp_balance * (1 - tax_rate)
         tsp_withdrawal_balance = net_balance
         penalty_note = f"No penalty via SEPP plan; an estimated {tax_rate*100:.0f}% tax is withheld."
-    else:  # Delay withdrawal until 59½
+    else:
         tsp_withdrawal_balance = 0
         penalty_note = "No withdrawal now. Funds remain untouched until 59½."
+
 else:
-    # For age 59.5 or older: withdrawals are penalty-free, but taxes still apply.
     net_balance = tsp_balance * (1 - tax_rate)
-    tsp_withdrawal_balance = tsp_balance  # In this case, you may choose to display the full balance or the net balance.
+    tsp_withdrawal_balance = tsp_balance
     penalty_note = f"Withdrawal is penalty-free; an estimated {tax_rate*100:.0f}% tax is applied on distributions."
+
 
 st.info(penalty_note)
 tsp_annual_income = tsp_withdrawal_balance * (withdrawal_rate / 100)
 st.markdown(f"**Estimated Annual TSP Income:** ${tsp_annual_income:,.2f}")
-
+tsp_annual_income = tsp_withdrawal_balance * (withdrawal_rate / 100)
 
 # --- FEHB / CHAMPVA & FEGLI Selection ---
 st.markdown("### FEHB / CHAMPVA & FEGLI Selection")
