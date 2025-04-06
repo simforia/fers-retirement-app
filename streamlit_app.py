@@ -928,64 +928,6 @@ system_type = st.radio(
 
 # Define the function for calculating retirement income
 
-def calc_retirement_income(
-        age: int,
-        base_service: float,
-        with_vera=False,
-        with_drp=False,
-        separation_age=50) -> float:
-    """
-    Calculate annual retirement income for a given age, base service,
-    and scenario (VERA, DRP).
-
-    :param age: The retirement age to calculate for.
-    :param base_service: The user's years of federal service.
-    :param with_vera: Whether VERA is applied.
-    :param with_drp: Whether DRP is applied.
-    :param separation_age: The age at which DRP lump sum is applied.
-    :return: The annual retirement income for the given scenario.
-    """
-
-   # Determine hypothetical service based on scenario
-if with_vera:
-    hypothetical_service = base_service  # VERA = fixed service at separation
-else:
-    hypothetical_service = base_service + max(0, age - current_age)
-
-# Basic pension
-if system_type == "CSRS":
-    pension = high3_salary * 0.0185 * hypothetical_service
-else:
-    pension = high3_salary * 0.01 * hypothetical_service * 0.9
-
-    # SRS (FERS only if <62 & service >= 20)
-    srs_amt = 0
-    if system_type == "FERS" and age < 62 and hypothetical_service >= 20:
-        srs_amt = srs_annual
-
-   # --- TSP Approximate ---
-withdrawal_rate = 0.04
-annual_growth_rate = 0.05
-
-# If VERA, freeze TSP growth at separation; otherwise continue compounding
-if with_vera:
-    years_until_retirement = 0
-else:
-    years_until_retirement = max(0, age - current_age)
-
-projected_tsp_balance = tsp_balance * \
-    ((1 + annual_growth_rate) ** years_until_retirement)
-estimated_tsp_withdrawal = projected_tsp_balance * withdrawal_rate
-
-penalty_applies, _ = calculate_tsp_penalty_status(
-    age,
-    years_service,
-    vera_elected=with_vera,
-    public_safety_employee=False
-)
-
-# Estimate annual withdrawal
-estimated_tsp_withdrawal = projected_tsp_balance * withdrawal_rate
 def calc_retirement_income(age: int, base_service: float, with_vera=False, with_drp=False, separation_age=50) -> float:
     """
     Calculate annual retirement income for a given age, base service,
@@ -1019,7 +961,6 @@ def calc_retirement_income(age: int, base_service: float, with_vera=False, with_
     withdrawal_rate = 0.04
     annual_growth_rate = 0.05
 
-    # If VERA, freeze TSP growth at separation; otherwise continue compounding
     if with_vera:
         years_until_retirement = 0
     else:
@@ -1028,7 +969,6 @@ def calc_retirement_income(age: int, base_service: float, with_vera=False, with_
     projected_tsp_balance = tsp_balance * ((1 + annual_growth_rate) ** years_until_retirement)
     estimated_tsp_withdrawal = projected_tsp_balance * withdrawal_rate
 
-    # Check if early withdrawal penalty applies
     penalty_applies, _ = calculate_tsp_penalty_status(
         age,
         years_service,
@@ -1052,8 +992,6 @@ def calc_retirement_income(age: int, base_service: float, with_vera=False, with_
     # Total annual income
     total_annual = pension + srs_amt + hypothetical_tsp + lumpsum_drp + va_annual
     return total_annual
-
-
 
 # Now, generate the retirement income comparison data
 min_compare_age = st.number_input(
