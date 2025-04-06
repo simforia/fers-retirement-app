@@ -878,72 +878,61 @@ def calc_retirement_income(age: int, base_service: float, with_vera=False, with_
     """
     Calculate annual retirement income for a given age, base service,
     and scenario (VERA, DRP).
-    
+
     :param age: The retirement age to calculate for.
     :param base_service: The user's years of federal service.
     :param with_vera: Whether VERA is applied.
     :param with_drp: Whether DRP is applied.
-    :param separation_age: The age at which DRP lumpsum is applied (e.g., user final separation).
+    :param separation_age: The age at which DRP lump sum is applied.
     :return: The annual retirement income for the given scenario.
     """
-    # Hypothetical service
     hypothetical_service = base_service + max(0, age - current_age)
     if hypothetical_service < 0:
         hypothetical_service = 0
 
     # Basic pension
-    pension = high3_salary * 0.01 * hypothetical_service * 0.9
     if system_type == "CSRS":
         pension = high3_salary * 0.0185 * hypothetical_service
+    else:
+        pension = high3_salary * 0.01 * hypothetical_service * 0.9
 
     # SRS (FERS only if <62 & service >= 20)
     srs_amt = 0
     if system_type == "FERS" and age < 62 and hypothetical_service >= 20:
         srs_amt = srs_annual
 
-    # TSP approximate
-    # Improved TSP logic with penalty and compounding
-years_until_retirement = max(0, age - current_age)
-annual_growth_rate = 0.05  # Assume 5% TSP growth per year
-withdrawal_rate = 0.04     # 4% withdrawal strategy
-
-    # Improved TSP logic with penalty and compounding
+    # --- TSP Approximate ---
+    withdrawal_rate = 0.04
+    annual_growth_rate = 0.05
     years_until_retirement = max(0, age - current_age)
-    annual_growth_rate = 0.05  # Assume 5% TSP growth per year
-    withdrawal_rate = 0.04     # 4% withdrawal strategy
 
-    # Project TSP growth
     projected_tsp_balance = tsp_balance * ((1 + annual_growth_rate) ** years_until_retirement)
-
-    # Estimate annual withdrawal
     estimated_tsp_withdrawal = projected_tsp_balance * withdrawal_rate
 
-    # Check if early withdrawal penalty applies
     penalty_applies, _ = tsp_penalty_exemption(
         age=age,
-        public_safety=False,       # or pull from checkbox input
-        sepp=False,                # or pull from checkbox input
-        disabled=False,            # or pull from checkbox input
-        vera=with_vera             # from function arg
+        public_safety=False,
+        sepp=False,
+        disabled=False,
+        vera=with_vera
     )
-
     if penalty_applies:
         estimated_tsp_withdrawal *= 0.90  # Apply 10% early withdrawal penalty
 
     hypothetical_tsp = estimated_tsp_withdrawal
 
-
-
-    # DRP lumpsum as a one-time addition at separation_age
+    # DRP lump sum
     lumpsum_drp = 0
     if with_drp and age >= separation_age:
-    lumpsum_drp = total_admin_leave_income
+        lumpsum_drp = total_admin_leave_income
 
-    # Annual VA disability
+    # VA disability income
     va_annual = va_monthly * 12
 
+    # Total annual income
     total_annual = pension + srs_amt + hypothetical_tsp + lumpsum_drp + va_annual
     return total_annual
+
 
 # Now, generate the retirement income comparison data
 min_compare_age = st.number_input("Minimum age to compare", min_value=40, max_value=80, value=50)
