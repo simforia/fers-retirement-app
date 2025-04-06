@@ -486,7 +486,6 @@ expected_retirement_multiplier = st.slider(
     help="A multiplier for estimating retirement wage vs. current wage. Set to 0 to simulate no post-retirement wage."
 )
 
-
 # Hypothetical formulas (adjust these as needed)
 estimated_retirement_wage = local_wage * expected_retirement_multiplier
 projected_career_wage = local_wage + (current_grade * current_step * 1000)  # Example formula
