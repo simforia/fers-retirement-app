@@ -951,8 +951,9 @@ if penalty_applies:
 
     # DRP lump sum
     lumpsum_drp = 0
-    if with_drp and age >= separation_age:
+if with_drp and age >= separation_age:
     lumpsum_drp = total_admin_leave_income
+
 
     # VA disability income
     va_annual = va_monthly * 12
