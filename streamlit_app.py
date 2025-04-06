@@ -480,29 +480,39 @@ local_wage = st.number_input(
     min_value=0, value=60000,
     help="Your current annual salary based on local cost of living."
 )
-expected_retirement_multiplier = st.slider(
-    "Expected Retirement Wage Multiplier", 
-    min_value=0.0, max_value=2.0, value=1.0, step=0.1,
-    help="A multiplier for estimating retirement wage vs. current wage. Set to 0 to simulate no post-retirement wage."
+
+show_retirement_wage_section = st.checkbox(
+    "Do you plan to earn income after retirement?",
+    value=True,
+    help="Check this if you plan to earn wages after retirement. This section will calculate projected income."
 )
 
-# Hypothetical formulas (adjust these as needed)
-estimated_retirement_wage = local_wage * expected_retirement_multiplier
-projected_career_wage = local_wage + (current_grade * current_step * 1000)  # Example formula
+if show_retirement_wage_section:
+    expected_retirement_multiplier = st.slider(
+        "Expected Retirement Wage Multiplier",
+        min_value=0.0, max_value=2.0, value=1.0, step=0.1,
+        help="A multiplier for estimating retirement wage vs. current wage. Set to 0 to simulate no post-retirement wage."
+    )
 
-wage_comparison = {
-    "Category": ["Estimated Retirement Wage", "Projected Continued Career Wage"],
-    "Annual Wage ($)": [estimated_retirement_wage, projected_career_wage]
-}
-df_wage = pd.DataFrame(wage_comparison)
-st.dataframe(df_wage.style.format({"Annual Wage ($)": "${:,.2f}"}), use_container_width=True)
+    # Hypothetical formulas (adjust these as needed)
+    estimated_retirement_wage = local_wage * expected_retirement_multiplier
+    projected_career_wage = local_wage + (current_grade * current_step * 1000)  # Example formula
 
-st.markdown("""
-**Analysis:**
-- **Retirement Wage:** This is a simplified estimate based on a multiplier applied to your current wage.
-- **Continued Career Wage:** This rough estimate factors in potential grade and step increases.
-Compare these figures to see which path might yield a better financial outcome, considering both long-term stability and short-term earning potential.
-""")
+    wage_comparison = {
+        "Category": ["Estimated Retirement Wage", "Projected Continued Career Wage"],
+        "Annual Wage ($)": [estimated_retirement_wage, projected_career_wage]
+    }
+
+    df_wage = pd.DataFrame(wage_comparison)
+    st.dataframe(df_wage.style.format({"Annual Wage ($)": "${:,.2f}"}), use_container_width=True)
+
+    st.markdown("""
+    **Analysis:**
+    - **Retirement Wage:** This is a simplified estimate based on a multiplier applied to your current wage.
+    - **Continued Career Wage:** This rough estimate factors in potential grade and step increases.
+    Compare these figures to see which path might yield a better financial outcome, considering both long-term stability and short-term earning potential.
+    """)
+
 
 
 # --- Additional Expense Inputs (Enhanced) ---
