@@ -9,7 +9,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
 # --- Setup & Session State ---
-st.session_state.setdefault("visits", 1337)
+st.session_state.setdefault("visits", 1336)
 st.session_state.visits += 1
 
 st.markdown(
