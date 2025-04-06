@@ -935,14 +935,14 @@ penalty_applies, _ = calculate_tsp_penalty_status(
 
 
     if penalty_applies:
-        estimated_tsp_withdrawal *= 0.90  # Apply 10% early withdrawal penalty
+    estimated_tsp_withdrawal *= 0.90  # Apply 10% early withdrawal penalty
 
     hypothetical_tsp = estimated_tsp_withdrawal
 
     # DRP lump sum
     lumpsum_drp = 0
     if with_drp and age >= separation_age:
-        lumpsum_drp = total_admin_leave_income
+    lumpsum_drp = total_admin_leave_income
 
     # VA disability income
     va_annual = va_monthly * 12
