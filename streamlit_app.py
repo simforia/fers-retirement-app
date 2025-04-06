@@ -907,25 +907,31 @@ years_until_retirement = max(0, age - current_age)
 annual_growth_rate = 0.05  # Assume 5% TSP growth per year
 withdrawal_rate = 0.04     # 4% withdrawal strategy
 
-# Project TSP growth
-projected_tsp_balance = tsp_balance * ((1 + annual_growth_rate) ** years_until_retirement)
+    # Improved TSP logic with penalty and compounding
+    years_until_retirement = max(0, age - current_age)
+    annual_growth_rate = 0.05  # Assume 5% TSP growth per year
+    withdrawal_rate = 0.04     # 4% withdrawal strategy
 
-# Estimate annual withdrawal
-estimated_tsp_withdrawal = projected_tsp_balance * withdrawal_rate
+    # Project TSP growth
+    projected_tsp_balance = tsp_balance * ((1 + annual_growth_rate) ** years_until_retirement)
 
-# Check if early withdrawal penalty applies
-penalty_applies, _ = tsp_penalty_exemption(
-    age=age,
-    public_safety=False,       # or pull from checkbox input
-    sepp=False,                # or pull from checkbox input
-    disabled=False,            # or pull from checkbox input
-    vera=with_vera             # from the loop condition
-)
+    # Estimate annual withdrawal
+    estimated_tsp_withdrawal = projected_tsp_balance * withdrawal_rate
 
-if penalty_applies:
-    estimated_tsp_withdrawal *= 0.90  # Apply 10% early withdrawal penalty
+    # Check if early withdrawal penalty applies
+    penalty_applies, _ = tsp_penalty_exemption(
+        age=age,
+        public_safety=False,       # or pull from checkbox input
+        sepp=False,                # or pull from checkbox input
+        disabled=False,            # or pull from checkbox input
+        vera=with_vera             # from function arg
+    )
 
-hypothetical_tsp = estimated_tsp_withdrawal
+    if penalty_applies:
+        estimated_tsp_withdrawal *= 0.90  # Apply 10% early withdrawal penalty
+
+    hypothetical_tsp = estimated_tsp_withdrawal
+
 
 
     # DRP lumpsum as a one-time addition at separation_age
