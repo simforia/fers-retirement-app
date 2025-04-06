@@ -956,10 +956,10 @@ if with_drp and age >= separation_age:
 
 
     # VA disability income
-    va_annual = va_monthly * 12
+va_annual = va_monthly * 12
 
-     # Total annual income
-    total_annual = pension + srs_amt + hypothetical_tsp + lumpsum_drp + va_annual
+# Total annual income
+total_annual = pension + srs_amt + hypothetical_tsp + lumpsum_drp + va_annual
 return total_annual
 
 # Now, generate the retirement income comparison data
