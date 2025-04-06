@@ -73,8 +73,6 @@ See our GPT link at the bottom of the page for any complex questions.
         """
     )
 
-    )
-
 # --- Inputs ---
 # --- Inputs with Enhanced Tooltips ---
 current_age = st.number_input(
