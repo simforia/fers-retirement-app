@@ -920,9 +920,9 @@ def calc_retirement_income(age: int, base_service: float, with_vera=False, with_
     estimated_tsp_withdrawal = projected_tsp_balance * withdrawal_rate
 
     penalty_applies, _ = calculate_tsp_penalty_status(
-    age, 
-    years_service, 
-    vera_elected=with_vera, 
+    age,
+    years_service,
+    vera_elected=with_vera,
     public_safety_employee=False
 )
 
