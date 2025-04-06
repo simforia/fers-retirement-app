@@ -933,8 +933,18 @@ penalty_applies, _ = calculate_tsp_penalty_status(
     public_safety_employee=False
 )
 
+ # Estimate annual withdrawal
+estimated_tsp_withdrawal = projected_tsp_balance * withdrawal_rate
 
-    if penalty_applies:
+# Check if early withdrawal penalty applies
+penalty_applies, _ = calculate_tsp_penalty_status(
+    age,
+    years_service,
+    vera_elected=with_vera,
+    public_safety_employee=False
+)
+
+if penalty_applies:
     estimated_tsp_withdrawal *= 0.90  # Apply 10% early withdrawal penalty
 
     hypothetical_tsp = estimated_tsp_withdrawal
