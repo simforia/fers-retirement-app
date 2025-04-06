@@ -987,32 +987,48 @@ penalty_applies, _ = calculate_tsp_penalty_status(
 
 # Estimate annual withdrawal
 estimated_tsp_withdrawal = projected_tsp_balance * withdrawal_rate
+def calc_retirement_income(age: int, base_service: float, with_vera=False, with_drp=False, separation_age=50) -> float:
+    # Determine hypothetical service based on scenario
+    if with_vera:
+        hypothetical_service = base_service
+    else:
+        hypothetical_service = base_service + max(0, age - current_age)
 
-# Check if early withdrawal penalty applies
-penalty_applies, _ = calculate_tsp_penalty_status(
-    age,
-    years_service,
-    vera_elected=with_vera,
-    public_safety_employee=False
-)
+    # Basic pension
+    if system_type == "CSRS":
+        pension = high3_salary * 0.0185 * hypothetical_service
+    else:
+        pension = high3_salary * 0.01 * hypothetical_service * 0.9
 
-if penalty_applies:
-    estimated_tsp_withdrawal *= 0.90  # Apply 10% early withdrawal penalty
+    # SRS (FERS only if <62 & service >= 20)
+    srs_amt = 0
+    if system_type == "FERS" and age < 62 and hypothetical_service >= 20:
+        srs_amt = srs_annual
 
+    # --- TSP ---
+    withdrawal_rate = 0.04
+    annual_growth_rate = 0.05
+    years_until_retirement = 0 if with_vera else max(0, age - current_age)
+    projected_tsp_balance = tsp_balance * ((1 + annual_growth_rate) ** years_until_retirement)
+    estimated_tsp_withdrawal = projected_tsp_balance * withdrawal_rate
+
+    penalty_applies, _ = calculate_tsp_penalty_status(
+        age, years_service, vera_elected=with_vera, public_safety_employee=False
+    )
+    if penalty_applies:
+        estimated_tsp_withdrawal *= 0.90  # Apply 10% penalty
     hypothetical_tsp = estimated_tsp_withdrawal
 
-    # DRP lump sum
-    lumpsum_drp = 0
-if with_drp and age >= separation_age:
-    lumpsum_drp = total_admin_leave_income
+    # --- DRP lump sum ---
+    lumpsum_drp = total_admin_leave_income if with_drp and age >= separation_age else 0
 
+    # --- VA Disability ---
+    va_annual = va_monthly * 12
 
-# VA disability income
-va_annual = va_monthly * 12
+    # --- Total Income ---
+    total_annual = pension + srs_amt + hypothetical_tsp + lumpsum_drp + va_annual
+    return total_annual
 
-# Total annual income
-total_annual = pension + srs_amt + hypothetical_tsp + lumpsum_drp + va_annual
-return total_annual
 
 # Now, generate the retirement income comparison data
 min_compare_age = st.number_input(
