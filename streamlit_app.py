@@ -76,14 +76,11 @@ with st.expander("ℹ️ How to Use This Tool"):
 # --- Military Benefits Section (Conditional) ---
 st.markdown("### Military Benefits")
 
-show_military_benefits = st.checkbox(
-    "Eligible for Military Benefits (TRICARE, Military Retirement Pay)?",
-    value=False,
-    help="Check if you are a military retiree eligible for TRICARE or retirement pay."
-)
+# --- Military Benefits Option ---
+show_military_benefits = st.checkbox("Add Military Benefits (TRICARE / Military Retirement)?")
 
 if show_military_benefits:
-    # --- TRICARE Selection ---
+    # --- TRICARE ---
     tricare_selected = st.checkbox(
         "Covered under TRICARE (instead of FEHB/CHAMPVA)?",
         value=False,
@@ -110,7 +107,6 @@ if show_military_benefits:
         help="Enter the year when military retirement pay begins. Useful for reservists."
     )
 
-    # Logic to include Military Pay in projections
     include_military_pay = datetime.now().year >= military_retirement_start_year
 
     if include_military_pay and military_retirement_pay > 0:
@@ -119,6 +115,7 @@ if show_military_benefits:
         st.markdown(f"✅ **Military Retirement Pay added:** {military_retirement_pay:,.2f} starting in {military_retirement_start_year}.")
     elif military_retirement_pay > 0:
         st.warning(f"⚠️ Military retirement pay starts in {military_retirement_start_year}. Not included in current year projection.")
+
 
 # Determine if military retirement pay should be included based on current year
 include_military_pay = datetime.now().year >= military_retirement_start_year
