@@ -12,6 +12,55 @@ from reportlab.pdfgen import canvas
 st.session_state.setdefault("visits", 1336)
 st.session_state.visits += 1
 
+# --- Additional Input Options: TRICARE and Military Retirement Pay ---
+st.markdown("### Additional Military Benefits")
+
+# --- TRICARE Health Coverage Selection ---
+tricare_selected = st.checkbox(
+    "Covered under TRICARE (instead of FEHB/CHAMPVA)?",
+    value=False,
+    help="Check this if you receive TRICARE military health coverage. This will override FEHB/CHAMPVA costs."
+)
+
+if tricare_selected:
+    fehb_premium = 0  # Override FEHB premium with TRICARE (assume no monthly premium)
+    st.markdown("✅ **TRICARE selected:** No monthly health premium included in cost model.")
+
+# --- Military Retirement Pay Input ---
+st.markdown("### Military Retirement Pay")
+
+military_retirement_pay = st.number_input(
+    "Annual Military Retirement Pay ($)",
+    min_value=0,
+    value=0,
+    help="Enter your gross annual income from military retirement (if applicable). This will be added to your annual income stream."
+)
+
+military_retirement_start_year = st.number_input(
+    "Military Retirement Pay Start Year",
+    min_value=1900,
+    max_value=datetime.now().year + 20,
+    value=datetime.now().year,
+    help="Enter the year when military retirement pay becomes active. Useful for reserve retirees who start receiving pay later."
+)
+
+# Determine if military retirement pay should be included based on current year
+include_military_pay = datetime.now().year >= military_retirement_start_year
+
+if include_military_pay and military_retirement_pay > 0:
+    income_labels.append("Military Retirement Pay")
+    income_values.append(military_retirement_pay)
+    st.markdown(f"✅ **Military Retirement Pay added:** {military_retirement_pay:,.2f} starting in {military_retirement_start_year}.")
+elif military_retirement_pay > 0:
+    st.warning(f"⚠️ Military retirement pay starts in {military_retirement_start_year}. Not included in current year projection.")
+
+# Recalculate total
+total_preretirement_income = sum(income_values)
+
+# Update financial outputs
+st.success(f"**Combined Pre-Retirement Income (Updated):** {currency_symbol}{total_preretirement_income:,.2f}")
+
+
 st.markdown(
     """
     <style>
