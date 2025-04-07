@@ -54,14 +54,6 @@ if include_military_pay and military_retirement_pay > 0:
 elif military_retirement_pay > 0:
     st.warning(f"⚠️ Military retirement pay starts in {military_retirement_start_year}. Not included in current year projection.")
 
-# Recalculate total
-total_preretirement_income = sum(income_values)
-
-# Update financial outputs
-st.success(f"**Combined Pre-Retirement Income (Updated):** {currency_symbol}{total_preretirement_income:,.2f}")
-
-
-
 st.markdown(
     """
     <style>
@@ -623,8 +615,10 @@ currency_symbol = st.selectbox(
 
 # --- Enhanced Financial Summary & Net Cash Flow ---
 st.markdown("### 📋 Total Pre-Retirement Income Summary")
+
 income_labels = ["VSIP Lump Sum"]
 income_values = [vsip_amount]
+
 if disability_retirement:
     income_labels.append("Annual FERS Pension (Disability Retirement)")
     income_values.append(fers_disability)
@@ -634,16 +628,25 @@ else:
     if srs_annual > 0:
         income_labels.append("Special Retirement Supplement (SRS)")
         income_values.append(srs_annual)
+
 if va_monthly > 0:
     income_labels.append("Annual VA Disability")
     income_values.append(va_monthly * 12)
 
+# Military retirement pay (already declared and evaluated earlier)
+if include_military_pay and military_retirement_pay > 0:
+    income_labels.append("Military Retirement Pay")
+    income_values.append(military_retirement_pay)
+
+# Recalculate total
+total_preretirement_income = sum(income_values)
+
+# Display summary
 summary_data = {
     "Income Type": income_labels,
     "Amount": income_values,
 }
 summary_df = pd.DataFrame(summary_data)
-total_preretirement_income = sum(income_values)
 
 st.dataframe(summary_df.style.format(
     {"Amount": f"{currency_symbol}{{:,.2f}}"}), use_container_width=True)
