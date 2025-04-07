@@ -106,10 +106,10 @@ if show_military_benefits:
         help="Enter the year when military retirement pay begins. Useful for reservists."
     )
 
-    # ✅ Safe to reference these now
+       # ✅ Safe to reference these now
     include_military_pay = datetime.now().year >= military_retirement_start_year
 
-    # 🔁 Ensure session keys exist
+    # 🧠 Ensure session keys exist
     if "income_labels" not in st.session_state:
         st.session_state.income_labels = []
     if "income_values" not in st.session_state:
@@ -122,12 +122,6 @@ if show_military_benefits:
         st.markdown(f"✅ **Military Retirement Pay added:** {military_retirement_pay:,.2f} starting in {military_retirement_start_year}.")
     elif military_retirement_pay > 0:
         st.warning(f"⚠️ Military retirement pay starts in {military_retirement_start_year}. Not included in current year projection.")
-
-# Ensure income_labels and income_values exist before appending
-if "income_labels" not in st.session_state:
-    st.session_state.income_labels = []
-if "income_values" not in st.session_state:
-    st.session_state.income_values = []
 
 # --- Inputs with Enhanced Tooltips ---
 current_age = st.number_input(
