@@ -122,32 +122,6 @@ if "income_labels" not in st.session_state:
 if "income_values" not in st.session_state:
     st.session_state.income_values = []
 
-if include_military_pay and military_retirement_pay > 0:
-    st.session_state.income_labels.append("Military Retirement Pay")
-    st.session_state.income_values.append(military_retirement_pay)
-    st.markdown(f"✅ **Military Retirement Pay added:** {military_retirement_pay:,.2f} starting in {military_retirement_start_year}.")
-elif military_retirement_pay > 0:
-    st.warning(f"⚠️ Military retirement pay starts in {military_retirement_start_year}. Not included in current year projection.")
-
-
-# --- Visit Counter ---
-#st.write(f"You have visited this page {st.session_state.visits} times.")
-
-# --- Header ---
-# (Continue with your header code here...)
-
-#st.markdown(
- #   """
-#<div style="text-align: center;">
-#    <h2 style="margin-bottom: 0;">Simforia Intelligence Group</h2>
-#    <p style='font-size: 18px; margin-top: 0;'><em>Retirement Optimization Toolkit – DRP / VERA / TSP Strategy Suite</em></p>
-#    <small><strong>Important Notice: For Informational Purposes Only</strong><br></small>
-#</div>
-#""",
-#    unsafe_allow_html=True
-#)
-
-# --- Inputs ---
 # --- Inputs with Enhanced Tooltips ---
 current_age = st.number_input(
     "Current Age",
