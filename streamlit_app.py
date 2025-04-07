@@ -90,20 +90,7 @@ if tricare_selected:
 # --- Military Retirement Pay Input ---
 st.markdown("### Military Retirement Pay")
 
-military_retirement_pay = st.number_input(
-    "Annual Military Retirement Pay ($)",
-    min_value=0,
-    value=0,
-    help="Enter your gross annual income from military retirement (if applicable). This will be added to your annual income stream."
-)
 
-military_retirement_start_year = st.number_input(
-    "Military Retirement Pay Start Year",
-    min_value=1900,
-    max_value=datetime.now().year + 20,
-    value=datetime.now().year,
-    help="Enter the year when military retirement pay becomes active. Useful for reserve retirees who start receiving pay later."
-)
 
 # Determine if military retirement pay should be included based on current year
 include_military_pay = datetime.now().year >= military_retirement_start_year
@@ -665,11 +652,18 @@ if include_military_pay and military_retirement_pay > 0:
 # Recalculate total
 total_preretirement_income = sum(income_values)
 
+# Optional: Reset Button to Clear Income Sources
+if st.button("🔄 Reset Income Sources"):
+    st.session_state.income_labels = []
+    st.session_state.income_values = []
+    st.experimental_rerun()
+
 # Display summary
 summary_data = {
-    "Income Type": income_labels,
-    "Amount": income_values,
+    "Income Type": st.session_state.income_labels,
+    "Amount": st.session_state.income_values,
 }
+
 summary_df = pd.DataFrame(summary_data)
 
 st.dataframe(summary_df.style.format(
