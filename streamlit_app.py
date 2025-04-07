@@ -12,6 +12,34 @@ from reportlab.pdfgen import canvas
 st.session_state.setdefault("visits", 1336)
 st.session_state.visits += 1
 
+st.markdown(
+    """
+    <style>
+        html, body, [class*="css"] {
+            font-size: 18px !important;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+# --- Visit Counter ---
+st.write(f"You have visited this page {st.session_state.visits} times.")
+
+# --- Header ---
+# (Continue with your header code here...)
+
+st.markdown(
+    """
+<div style="text-align: center;">
+    <h2 style="margin-bottom: 0;">Simforia Intelligence Group</h2>
+    <p style='font-size: 18px; margin-top: 0;'><em>Retirement Optimization Toolkit – DRP / VERA / TSP Strategy Suite</em></p>
+    <small><strong>Important Notice: For Informational Purposes Only</strong><br></small>
+</div>
+""",
+    unsafe_allow_html=True
+)
+
 # --- Additional Input Options: TRICARE and Military Retirement Pay ---
 st.markdown("### Additional Military Benefits")
 
@@ -47,23 +75,19 @@ military_retirement_start_year = st.number_input(
 # Determine if military retirement pay should be included based on current year
 include_military_pay = datetime.now().year >= military_retirement_start_year
 
+# Ensure income_labels and income_values exist before appending
+if "income_labels" not in st.session_state:
+    st.session_state.income_labels = []
+if "income_values" not in st.session_state:
+    st.session_state.income_values = []
+
 if include_military_pay and military_retirement_pay > 0:
-    income_labels.append("Military Retirement Pay")
-    income_values.append(military_retirement_pay)
+    st.session_state.income_labels.append("Military Retirement Pay")
+    st.session_state.income_values.append(military_retirement_pay)
     st.markdown(f"✅ **Military Retirement Pay added:** {military_retirement_pay:,.2f} starting in {military_retirement_start_year}.")
 elif military_retirement_pay > 0:
     st.warning(f"⚠️ Military retirement pay starts in {military_retirement_start_year}. Not included in current year projection.")
 
-st.markdown(
-    """
-    <style>
-        html, body, [class*="css"] {
-            font-size: 18px !important;
-        }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
 
 # --- Visit Counter ---
 st.write(f"You have visited this page {st.session_state.visits} times.")
