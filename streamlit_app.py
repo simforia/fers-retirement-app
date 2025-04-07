@@ -26,8 +26,12 @@ st.markdown(
 # --- Visit Counter ---
 st.write(f"You have visited this page {st.session_state.visits} times.")
 
-# --- Header ---
-# (Continue with your header code here...)
+# --- Initialize session state income trackers if missing ---
+if "income_labels" not in st.session_state:
+    st.session_state.income_labels = []
+
+if "income_values" not in st.session_state:
+    st.session_state.income_values = []
 
 st.markdown(
     """
@@ -639,11 +643,6 @@ else:
 if va_monthly > 0:
     income_labels.append("Annual VA Disability")
     income_values.append(va_monthly * 12)
-
-# Military retirement pay (already declared and evaluated earlier)
-if include_military_pay and military_retirement_pay > 0:
-    income_labels.append("Military Retirement Pay")
-    income_values.append(military_retirement_pay)
 
 # Recalculate total
 total_preretirement_income = sum(income_values)
