@@ -60,6 +60,19 @@ See our GPT link at the bottom of the page for any complex questions.
         """
     )
     
+   # --- Instructions ---
+with st.expander("ℹ️ How to Use This Tool"):
+    st.markdown(
+        """
+    1. Enter your current age and total federal service.
+    2. Input your TSP balance, high-3 salary, and contribution rate.
+    3. Select your FEHB/CHAMPVA and FEGLI retirement coverage.
+    4. View projected growth, income, and milestone ages.
+    5. Compare monthly income streams.
+    6. Visualize projected net worth including VA, TSP, FERS, SRS, FEHB, and DRP.
+    """
+    ) 
+    
 # --- Additional Input Options: TRICARE and Military Retirement Pay ---
 st.markdown("### Additional Military Benefits")
 
@@ -125,19 +138,6 @@ elif military_retirement_pay > 0:
 #""",
 #    unsafe_allow_html=True
 #)
-
-# --- Instructions ---
-with st.expander("ℹ️ How to Use This Tool"):
-    st.markdown(
-        """
-    1. Enter your current age and total federal service.
-    2. Input your TSP balance, high-3 salary, and contribution rate.
-    3. Select your FEHB/CHAMPVA and FEGLI retirement coverage.
-    4. View projected growth, income, and milestone ages.
-    5. Compare monthly income streams.
-    6. Visualize projected net worth including VA, TSP, FERS, SRS, FEHB, and DRP.
-    """
-    )
 
 # --- Inputs ---
 # --- Inputs with Enhanced Tooltips ---
