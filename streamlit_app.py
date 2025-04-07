@@ -123,16 +123,6 @@ if show_military_benefits:
     elif military_retirement_pay > 0:
         st.warning(f"⚠️ Military retirement pay starts in {military_retirement_start_year}. Not included in current year projection.")
 
-# Determine if military retirement pay should be included based on current year
-include_military_pay = datetime.now().year >= military_retirement_start_year
-
-if include_military_pay and military_retirement_pay > 0:
-    st.session_state.income_labels.append("Military Retirement Pay")
-    st.session_state.income_values.append(military_retirement_pay)
-    st.markdown(f"✅ **Military Retirement Pay added:** {military_retirement_pay:,.2f} starting in {military_retirement_start_year}.")
-elif military_retirement_pay > 0:
-    st.warning(f"⚠️ Military retirement pay starts in {military_retirement_start_year}. Not included in current year projection.")
-
 # Ensure income_labels and income_values exist before appending
 if "income_labels" not in st.session_state:
     st.session_state.income_labels = []
