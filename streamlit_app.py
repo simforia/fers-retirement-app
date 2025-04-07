@@ -61,6 +61,7 @@ total_preretirement_income = sum(income_values)
 st.success(f"**Combined Pre-Retirement Income (Updated):** {currency_symbol}{total_preretirement_income:,.2f}")
 
 
+
 st.markdown(
     """
     <style>
