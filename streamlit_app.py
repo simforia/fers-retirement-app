@@ -40,6 +40,26 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+# --- FAQ / Help Section ---
+with st.expander("❓ FAQ / Help"):
+    st.markdown(
+        """
+**SEPP (Substantially Equal Periodic Payments):**
+A method to withdraw from your retirement savings without incurring the 10% early withdrawal penalty if you retire before age 59½. Payments are fixed and continue for at least 5 years or until you reach 59½ (whichever is longer).
+
+**Age 55 Rule:**
+For federal employees retiring directly (like via VERA) at age 55 or older in the same calendar year, TSP withdrawals are penalty-free.
+
+**Pension Calculations:**
+- **Regular FERS Pension:** Calculated as High-3 Salary * 1% * Years of Service * 0.9
+- **Disability FERS Pension:** Calculated as High-3 Salary * (0.6 if under 62, otherwise 0.4)
+
+Adjust the inputs above to see how changes in your service years or salary impact your final pension.
+
+See our GPT link at the bottom of the page for any complex questions.
+        """
+    )
+    
 # --- Additional Input Options: TRICARE and Military Retirement Pay ---
 st.markdown("### Additional Military Benefits")
 
@@ -117,26 +137,6 @@ with st.expander("ℹ️ How to Use This Tool"):
     5. Compare monthly income streams.
     6. Visualize projected net worth including VA, TSP, FERS, SRS, FEHB, and DRP.
     """
-    )
-
-# --- FAQ / Help Section ---
-with st.expander("❓ FAQ / Help"):
-    st.markdown(
-        """
-**SEPP (Substantially Equal Periodic Payments):**
-A method to withdraw from your retirement savings without incurring the 10% early withdrawal penalty if you retire before age 59½. Payments are fixed and continue for at least 5 years or until you reach 59½ (whichever is longer).
-
-**Age 55 Rule:**
-For federal employees retiring directly (like via VERA) at age 55 or older in the same calendar year, TSP withdrawals are penalty-free.
-
-**Pension Calculations:**
-- **Regular FERS Pension:** Calculated as High-3 Salary * 1% * Years of Service * 0.9
-- **Disability FERS Pension:** Calculated as High-3 Salary * (0.6 if under 62, otherwise 0.4)
-
-Adjust the inputs above to see how changes in your service years or salary impact your final pension.
-
-See our GPT link at the bottom of the page for any complex questions.
-        """
     )
 
 # --- Inputs ---
