@@ -90,21 +90,21 @@ elif military_retirement_pay > 0:
 
 
 # --- Visit Counter ---
-st.write(f"You have visited this page {st.session_state.visits} times.")
+#st.write(f"You have visited this page {st.session_state.visits} times.")
 
 # --- Header ---
 # (Continue with your header code here...)
 
-st.markdown(
-    """
-<div style="text-align: center;">
-    <h2 style="margin-bottom: 0;">Simforia Intelligence Group</h2>
-    <p style='font-size: 18px; margin-top: 0;'><em>Retirement Optimization Toolkit – DRP / VERA / TSP Strategy Suite</em></p>
-    <small><strong>Important Notice: For Informational Purposes Only</strong><br></small>
-</div>
-""",
-    unsafe_allow_html=True
-)
+#st.markdown(
+ #   """
+#<div style="text-align: center;">
+#    <h2 style="margin-bottom: 0;">Simforia Intelligence Group</h2>
+#    <p style='font-size: 18px; margin-top: 0;'><em>Retirement Optimization Toolkit – DRP / VERA / TSP Strategy Suite</em></p>
+#    <small><strong>Important Notice: For Informational Purposes Only</strong><br></small>
+#</div>
+#""",
+#    unsafe_allow_html=True
+#)
 
 # --- Instructions ---
 with st.expander("ℹ️ How to Use This Tool"):
