@@ -74,7 +74,7 @@ with st.expander("ℹ️ How to Use This Tool"):
     ) 
     
 # --- Military Benefits Section (Conditional) ---
-st.markdown("### Military Benefits")
+#st.markdown("### Military Benefits")
 
 # --- Military Benefits Option ---
 show_military_benefits = st.checkbox("Add Military Benefits (TRICARE / Military Retirement)?")
