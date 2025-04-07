@@ -78,9 +78,9 @@ st.markdown("### Additional Military Benefits")
 
 # --- TRICARE Health Coverage Selection ---
 tricare_selected = st.checkbox(
-    "Covered under TRICARE (instead of FEHB/CHAMPVA)?",
+    "Covered under TRICARE (instead of FEHB)?",
     value=False,
-    help="Check this if you receive TRICARE military health coverage. This will override FEHB/CHAMPVA costs."
+    help="Check this if you receive TRICARE military health coverage. This will override FEHB costs."
 )
 
 if tricare_selected:
